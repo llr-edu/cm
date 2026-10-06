@@ -42,6 +42,30 @@ function panelAplicarAlumnoEnAulas_(correo, aulas, accion) {
   if (!courseIds.length) return result;
 
   const esEntrada = accion === 'entrada' || accion === 'agregar';
+
+  if (esEntrada) {
+    panelAplicarAlumnoEnAulasPorLotes_(correo, courseIds, true, result);
+    return result;
+  }
+
+  panelAplicarAlumnoEnAulasParalelo_(correo, courseIds, false, result);
+  return result;
+}
+
+function panelAplicarAlumnoEnAulasPorLotes_(correo, courseIds, esEntrada, result) {
+  const tamanoLote = panelTamanoLoteInscripcion_();
+
+  for (let i = 0; i < courseIds.length; i += tamanoLote) {
+    const lote = courseIds.slice(i, i + tamanoLote);
+    panelAplicarAlumnoEnAulasParalelo_(correo, lote, esEntrada, result);
+
+    if (i + tamanoLote < courseIds.length) {
+      Utilities.sleep(220);
+    }
+  }
+}
+
+function panelAplicarAlumnoEnAulasParalelo_(correo, courseIds, esEntrada, result) {
   const requests = courseIds.map(courseId => panelCrearSolicitudAlumnoAula_(correo, courseId, esEntrada));
   let responses;
 
@@ -54,8 +78,21 @@ function panelAplicarAlumnoEnAulas_(correo, aulas, accion) {
   responses.forEach((response, index) => {
     panelProcesarRespuestaAlumnoAula_(response, courseIds[index], esEntrada, result);
   });
+}
 
-  return result;
+function panelTamanoLoteInscripcion_() {
+  let value = '';
+
+  try {
+    value = obtenerConfig_('Tamaño lote inscripción alumnos');
+  } catch (error) {
+    value = '';
+  }
+
+  const parsed = Number(value);
+  if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 10) return Math.floor(parsed);
+
+  return 2;
 }
 
 function panelCrearSolicitudAlumnoAula_(correo, courseId, esEntrada) {
