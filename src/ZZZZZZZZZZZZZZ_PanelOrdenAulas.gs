@@ -10,10 +10,6 @@ function panelAulasPorSeccion_(nivel, nomenclatura, incluirGenerales) {
   const colNivel = buscarColumna_(headers, 'Nivel');
   const colNomenclatura = buscarColumna_(headers, 'Nomenclatura');
   const colCourseId = buscarColumna_(headers, 'Course ID');
-  const colNombreFuente = panelBuscarColumnaOpcional_(headers, 'Nombre fuente');
-  const colMateria = panelBuscarColumnaOpcional_(headers, 'Materia Classroom');
-  const colNombreClassroom = panelBuscarColumnaOpcional_(headers, 'Nombre Classroom');
-  const colDescripcionFuente = panelBuscarColumnaOpcional_(headers, 'Descripción fuente');
 
   const target = normalizarNomenclatura_(nomenclatura);
   const general = obtenerGeneralNomenclatura_(target);
@@ -30,37 +26,10 @@ function panelAulasPorSeccion_(nivel, nomenclatura, incluirGenerales) {
     if (!courseId || vistos[courseId]) return;
 
     vistos[courseId] = true;
-    aulas.push({
-      courseId: courseId,
-      nomenclatura: actual,
-      titulo: panelTituloOrdenAula_(row, colNombreFuente, colMateria, colNombreClassroom, colDescripcionFuente)
-    });
+    aulas.push(courseId);
   });
 
-  return aulas
-    .sort((a, b) => {
-      const byTitle = panelOrdenTexto_(a.titulo).localeCompare(panelOrdenTexto_(b.titulo), 'es', { sensitivity: 'base', numeric: true });
-      if (byTitle !== 0) return byTitle;
-      return panelOrdenTexto_(a.nomenclatura).localeCompare(panelOrdenTexto_(b.nomenclatura), 'es', { sensitivity: 'base', numeric: true });
-    })
-    .reverse()
-    .map(aula => aula.courseId);
-}
-
-function panelTituloOrdenAula_(row, colNombreFuente, colMateria, colNombreClassroom, colDescripcionFuente) {
-  const valores = [
-    panelValorColumna_(row, colNombreFuente),
-    panelValorColumna_(row, colMateria),
-    panelValorColumna_(row, colNombreClassroom),
-    panelValorColumna_(row, colDescripcionFuente)
-  ].filter(Boolean);
-
-  for (let i = 0; i < valores.length; i++) {
-    const valor = valores[i];
-    if (!/^\d/.test(valor)) return valor;
-  }
-
-  return valores[0] || '';
+  return aulas;
 }
 
 function panelAplicarAlumnoEnAulas_(correo, aulas, accion) {
@@ -73,17 +42,7 @@ function panelAplicarAlumnoEnAulas_(correo, aulas, accion) {
   if (!courseIds.length) return result;
 
   const esEntrada = accion === 'entrada' || accion === 'agregar';
-
-  if (esEntrada) {
-    courseIds.forEach(courseId => {
-      const response = panelSolicitudAlumnoAula_(correo, courseId, true);
-      panelProcesarRespuestaAlumnoAula_(response, courseId, true, result);
-      Utilities.sleep(120);
-    });
-    return result;
-  }
-
-  const requests = courseIds.map(courseId => panelCrearSolicitudAlumnoAula_(correo, courseId, false));
+  const requests = courseIds.map(courseId => panelCrearSolicitudAlumnoAula_(correo, courseId, esEntrada));
   let responses;
 
   try {
@@ -93,15 +52,10 @@ function panelAplicarAlumnoEnAulas_(correo, aulas, accion) {
   }
 
   responses.forEach((response, index) => {
-    panelProcesarRespuestaAlumnoAula_(response, courseIds[index], false, result);
+    panelProcesarRespuestaAlumnoAula_(response, courseIds[index], esEntrada, result);
   });
 
   return result;
-}
-
-function panelSolicitudAlumnoAula_(correo, courseId, esEntrada) {
-  const request = panelCrearSolicitudAlumnoAula_(correo, courseId, esEntrada);
-  return UrlFetchApp.fetch(request.url, request);
 }
 
 function panelCrearSolicitudAlumnoAula_(correo, courseId, esEntrada) {
@@ -158,23 +112,4 @@ function panelMensajeApiAulas_(body) {
     if (parsed && parsed.error && parsed.error.message) return parsed.error.message;
   } catch (e) {}
   return String(body).substring(0, 240);
-}
-
-function panelBuscarColumnaOpcional_(headers, headerName) {
-  const index = headers.indexOf(headerName);
-  return index === -1 ? null : index;
-}
-
-function panelValorColumna_(row, colIndex) {
-  if (colIndex === null || colIndex === undefined || colIndex < 0) return '';
-  return String(row[colIndex] || '').trim();
-}
-
-function panelOrdenTexto_(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, ' ');
 }
