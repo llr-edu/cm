@@ -7,6 +7,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu(APP_NAME)
     .addItem('Panel operativo', 'abrirPanelOperativo')
+    .addItem('URL app móvil', 'mostrarUrlAppMovil')
     .addSeparator()
     .addItem('Start / Setup', 'startSetup')
     .addSeparator()
