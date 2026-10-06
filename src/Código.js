@@ -1,6 +1,6 @@
 /****************************************************
  * Classroom Manager LL. RR.
- * v1.8
+ * v1.9
  * Base: Setup + aulas + alumnos + profesores + consulta usuario + usuarios del dominio
  ****************************************************/
 
@@ -132,7 +132,7 @@ function crearHojaProfesores_(ss) {
 function crearHojaConsultaUsuario_(ss) {
   let sheet = ss.getSheetByName(SHEETS.USER_LOOKUP);
   if (!sheet) sheet = ss.insertSheet(SHEETS.USER_LOOKUP);
-  sheet.clear();
+  resetearHojaCompleta_(sheet);
 
   sheet.getRange('A1').setValue('Tipo de usuario');
   sheet.getRange('B1').setValue('Alumno');
@@ -223,7 +223,7 @@ function inicializarConfiguracion_(ss) {
     ['Dominio', 'losroblesenlinea.com.ve', 'Dominio institucional usado para actualizar USUARIOS.'],
     ['Año escolar', '2026-2027', 'Editable.'],
     ['Modo seguro', 'ACTIVO', 'Las acciones delicadas deben pedir confirmación.'],
-    ['Versión', '1.8', 'Setup + aulas + alumnos + profesores + consulta + usuarios.']
+    ['Versión', '1.9', 'Setup + aulas + alumnos + profesores + consulta + usuarios.']
   ];
 
   sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
@@ -234,7 +234,7 @@ function crearHojaConEncabezados_(ss, sheetName, headers) {
   let sheet = ss.getSheetByName(sheetName);
   if (!sheet) sheet = ss.insertSheet(sheetName);
 
-  sheet.clear();
+  resetearHojaCompleta_(sheet);
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 
   sheet.getRange(1, 1, 1, headers.length)
@@ -246,6 +246,21 @@ function crearHojaConEncabezados_(ss, sheetName, headers) {
   sheet.setFrozenRows(1);
   aplicarFormatoBasico_(sheet, headers.length);
   return sheet;
+}
+
+function resetearHojaCompleta_(sheet) {
+  const maxRows = sheet.getMaxRows();
+  const maxColumns = sheet.getMaxColumns();
+  const range = sheet.getRange(1, 1, maxRows, maxColumns);
+
+  const filter = sheet.getFilter();
+  if (filter) filter.remove();
+
+  range.clearContent();
+  range.clearFormat();
+  range.clearDataValidations();
+  range.clearNote();
+  sheet.clearConditionalFormatRules();
 }
 
 function aplicarFormatoBasico_(sheet, columnCount) {
@@ -263,6 +278,8 @@ function aplicarDesplegablesBasicos_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const lookup = ss.getSheetByName(SHEETS.USER_LOOKUP);
   if (lookup) {
+    lookup.getRange('A:A').clearDataValidations();
+    lookup.getRange('B:B').clearDataValidations();
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInList(['Alumno', 'Profesor'], true)
       .setAllowInvalid(false)
@@ -565,7 +582,11 @@ function consultarUsuario_(courseStates) {
 function limpiarResultadosConsultaUsuario_(sheet) {
   const lastRow = sheet.getLastRow();
   const lastCol = sheet.getLastColumn();
-  if (lastRow > 3) sheet.getRange(4, 1, lastRow - 3, lastCol).clearContent();
+  if (lastRow > 3) {
+    const range = sheet.getRange(4, 1, lastRow - 3, lastCol);
+    range.clearContent();
+    range.clearDataValidations();
+  }
   sheet.getRange('G1').clearContent();
 }
 
@@ -637,7 +658,11 @@ function obtenerConfig_(campo) {
 function limpiarDatosManteniendoEncabezado_(sheet) {
   const lastRow = sheet.getLastRow();
   const lastCol = sheet.getLastColumn();
-  if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, lastCol).clearContent();
+  if (lastRow > 1) {
+    const range = sheet.getRange(2, 1, lastRow - 1, lastCol);
+    range.clearContent();
+    range.clearDataValidations();
+  }
 }
 
 function obtenerHojaObligatoria_(ss, sheetName) {
