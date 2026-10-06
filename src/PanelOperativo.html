@@ -26,6 +26,7 @@
     button:disabled{opacity:.55;cursor:default}.row{display:flex;gap:8px}.row>*{flex:1}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .segment{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(255,255,255,.18);border-radius:14px;padding:4px;margin-top:10px}
     .segment button{margin:0;background:transparent;color:white;min-height:40px;padding:8px;border-radius:11px}.segment button.active{background:white;color:var(--red)}
+    .searchbox{position:relative}.searchbox input{padding-right:48px}.clearbtn{display:none;position:absolute;right:7px;top:7px;width:34px;min-height:34px;height:34px;margin:0;padding:0;border-radius:50%;background:#eef0f3;color:#333;font-size:18px;line-height:34px}.history-head{display:none;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}.history-head button{width:auto;min-height:30px;padding:6px 10px;margin:0;font-size:12px}.history-strip{display:none;gap:7px;overflow-x:auto;padding:8px 1px 2px;scrollbar-width:none}.history-strip::-webkit-scrollbar{display:none}.history-chip{width:auto;min-width:max-content;margin:0;background:#fff;color:#202124;border:1px solid var(--line);box-shadow:none;min-height:36px;padding:8px 10px;font-size:12px;border-radius:999px}.history-chip b{font-weight:800;color:var(--red)}
     .selected{display:flex;align-items:center;gap:10px}.avatar{width:42px;height:42px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 auto}.sel-info{min-width:0}.sel-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sel-email{font-size:12px;color:var(--muted);word-break:break-all}.empty-user{color:var(--muted);font-size:13px;padding:6px 0}
     .result{border:1px solid var(--line);border-radius:14px;padding:11px;background:white;margin:8px 0;cursor:pointer}.result:active{transform:scale(.99)}.result.selected{border-color:var(--red);background:var(--soft)}
     .name{font-weight:800;margin-bottom:3px}.email{font-size:12px;color:#333;word-break:break-all}.ou,.meta{font-size:11px;color:var(--muted);margin-top:3px}.badge{display:inline-block;font-size:10px;border-radius:999px;padding:3px 7px;background:#eef0f3;margin:6px 5px 0 0}.badge.warn{background:#fff4d6;color:#7a4a00}
@@ -52,7 +53,15 @@
     <section id="viewBuscar" class="view active">
       <div class="card flat">
         <div class="title">Buscar usuario</div>
-        <input id="busqueda" placeholder="Nombre, apellido, correo u OU" autocomplete="off" oninput="programarBusqueda()">
+        <div class="searchbox">
+          <input id="busqueda" placeholder="Nombre, apellido, correo u OU" autocomplete="off" oninput="programarBusqueda()">
+          <button id="btnLimpiarBusqueda" class="clearbtn" onclick="limpiarBusqueda()" type="button">×</button>
+        </div>
+        <div id="historyHead" class="history-head">
+          <span class="small">Recientes</span>
+          <button class="softbtn" onclick="limpiarHistorial()" type="button">Limpiar</button>
+        </div>
+        <div id="historial" class="history-strip"></div>
         <div id="estadoBusqueda" class="status">Cargando usuarios...</div>
       </div>
       <div id="resultados"></div>
@@ -65,6 +74,18 @@
           <button class="secondary" onclick="verAulas(false)" id="btnAulas" disabled>Ver aulas</button>
           <button class="ghost" onclick="copiarCorreo()" id="btnCopiar" disabled>Copiar correo</button>
         </div>
+      </div>
+
+      <div class="action-card">
+        <div class="action-head"><b>Cuenta de usuario</b><span class="pill">contraseña</span></div>
+        <div class="small">Cambia la contraseña del usuario seleccionado y define si debe cambiarla al entrar.</div>
+        <input id="passwordNueva" type="text" placeholder="Contraseña nueva" autocomplete="off">
+        <div class="row">
+          <button class="ghost" onclick="usarPasswordDefault()" id="btnPasswordDefault" type="button">Usar predeterminada</button>
+          <button onclick="cambiarPassword()" id="btnPassword" disabled>Actualizar</button>
+        </div>
+        <label class="check"><input type="checkbox" id="passwordForzar" checked> Pedir cambio al iniciar sesión</label>
+        <div id="estadoPassword" class="status"></div>
       </div>
 
       <div id="accionesAlumno">
@@ -140,9 +161,12 @@
 </nav>
 
 <script>
-let tipo='Alumno', seleccionado=null, secciones=[], usuariosCache=[], aulasActuales=[], timer=null, reloj=null, inicioReloj=0;
+let tipo='Alumno', seleccionado=null, secciones=[], usuariosCache=[], aulasActuales=[], timer=null, reloj=null, inicioReloj=0, historialUsuarios=[], passwordDefault='';
 
 window.addEventListener('load',()=>{
+  cargarHistorial();
+  renderHistorial();
+  cargarConfigPassword();
   cargarDatosIniciales();
   $('busqueda').focus();
 });
@@ -157,6 +181,13 @@ function cargarDatosIniciales(){
     setEstado('estadoBusqueda',usuariosCache.length?usuariosCache.length+' usuarios cargados.':'No hay usuarios cargados. Ejecuta Actualizar lista de usuarios.');
     buscar();
   }).withFailureHandler(error=>setEstado('estadoBusqueda',error.message||error)).panelObtenerUsuariosCache();
+}
+
+function cargarConfigPassword(){
+  google.script.run.withSuccessHandler(res=>{
+    passwordDefault=(res&&res.password)||'';
+    if(passwordDefault) $('passwordNueva').placeholder='Contraseña nueva o predeterminada';
+  }).withFailureHandler(()=>{}).panelObtenerConfigPassword();
 }
 
 function setTipo(nuevo){
@@ -176,11 +207,11 @@ function mostrarVista(nombre){
   });
 }
 
-function programarBusqueda(){ clearTimeout(timer); timer=setTimeout(buscar,120); }
+function programarBusqueda(){ actualizarClearBusqueda(); clearTimeout(timer); timer=setTimeout(buscar,120); }
 
 function buscar(){
   const texto=$('busqueda').value.trim();
-  const cont=$('resultados'); cont.innerHTML='';
+  const cont=$('resultados'); cont.innerHTML=''; actualizarClearBusqueda();
   if(!texto){ setEstado('estadoBusqueda',usuariosCache.length?usuariosCache.length+' usuarios cargados.':'Escribe para buscar.'); return; }
   if(texto.length<2){ setEstado('estadoBusqueda','Escribe al menos 2 caracteres.'); return; }
 
@@ -203,6 +234,16 @@ function buscar(){
   setEstado('estadoBusqueda','Sin resultados en la lista local.');
 }
 
+function limpiarBusqueda(){
+  $('busqueda').value='';
+  $('resultados').innerHTML='';
+  actualizarClearBusqueda();
+  setEstado('estadoBusqueda',usuariosCache.length?usuariosCache.length+' usuarios cargados.':'Escribe para buscar.');
+  $('busqueda').focus();
+}
+
+function actualizarClearBusqueda(){ $('btnLimpiarBusqueda').style.display=$('busqueda').value?'block':'none'; }
+
 function filtrarUsuariosLocal(texto,limite){
   const terms=normalizar(texto).split(' ').filter(Boolean), out=[];
   usuariosCache.forEach(u=>{
@@ -222,8 +263,44 @@ function renderUsuarios(usuarios){
   });
 }
 
+function cargarHistorial(){
+  try { historialUsuarios=JSON.parse(localStorage.getItem('cm_historial_usuarios')||'[]')||[]; }
+  catch(error){ historialUsuarios=[]; }
+}
+
+function guardarUsuarioHistorial(usuario){
+  if(!usuario||!usuario.email) return;
+  historialUsuarios=historialUsuarios.filter(u=>String(u.email||'').toLowerCase()!==String(usuario.email||'').toLowerCase());
+  historialUsuarios.unshift({fullName:usuario.fullName||'', email:usuario.email||'', orgUnitPath:usuario.orgUnitPath||''});
+  historialUsuarios=historialUsuarios.slice(0,8);
+  localStorage.setItem('cm_historial_usuarios',JSON.stringify(historialUsuarios));
+  renderHistorial();
+}
+
+function renderHistorial(){
+  const cont=$('historial'), head=$('historyHead');
+  if(!cont||!head) return;
+  cont.innerHTML='';
+  if(!historialUsuarios.length){ cont.style.display='none'; head.style.display='none'; return; }
+  head.style.display='flex'; cont.style.display='flex';
+  historialUsuarios.forEach(usuario=>{
+    const btn=document.createElement('button'); btn.className='history-chip'; btn.type='button';
+    const nombre=usuario.fullName||usuario.email||'';
+    btn.innerHTML=`<b>◴</b> ${esc(nombre.split(' ').slice(0,3).join(' '))}`;
+    btn.onclick=()=>seleccionarUsuario(usuario,null);
+    cont.appendChild(btn);
+  });
+}
+
+function limpiarHistorial(){
+  historialUsuarios=[];
+  localStorage.removeItem('cm_historial_usuarios');
+  renderHistorial();
+}
+
 function seleccionarUsuario(usuario,elemento){
   seleccionado=usuario;
+  guardarUsuarioHistorial(usuario);
   document.querySelectorAll('.result').forEach(card=>card.classList.remove('selected'));
   if(elemento) elemento.classList.add('selected');
   actualizarResumenUsuario(); actualizarBotones(); mostrarVista('Acciones'); verAulas(true);
@@ -238,7 +315,7 @@ function actualizarResumenUsuario(){
 
 function actualizarBotones(){
   const hay=!!(seleccionado&&seleccionado.email), esAlumno=tipo==='Alumno';
-  ['btnAulas','btnCopiar'].forEach(id=>$(id).disabled=!hay);
+  ['btnAulas','btnCopiar','btnPassword'].forEach(id=>$(id).disabled=!hay);
   ['btnAgregar','btnMover','btnRetirar'].forEach(id=>$(id).disabled=!hay||!esAlumno);
   ['btnProfesorAgregar','btnProfesorRetirar'].forEach(id=>$(id).disabled=!hay||esAlumno);
 }
@@ -331,9 +408,25 @@ function retirarProfesorSeccion(){
   google.script.run.withSuccessHandler(res=>terminarAccion('estadoProfesorRetirar',res)).withFailureHandler(error=>fallarAccion('estadoProfesorRetirar',error)).panelRetirarProfesorDeSeccion(seleccionado.email,nivel,seccion,incluir);
 }
 
+function usarPasswordDefault(){
+  if(!passwordDefault){ setEstado('estadoPassword','No hay contraseña predeterminada en CONFIGURACIÓN.'); return; }
+  $('passwordNueva').value=passwordDefault;
+  setEstado('estadoPassword','Contraseña predeterminada cargada.');
+}
+
+function cambiarPassword(){
+  if(!seleccionado) return;
+  const password=$('passwordNueva').value.trim(), exigir=$('passwordForzar').checked;
+  if(!password){ setEstado('estadoPassword','Escribe una contraseña.'); return; }
+  if(password.length<8){ setEstado('estadoPassword','La contraseña debe tener al menos 8 caracteres.'); return; }
+  if(!confirm('Cambiar contraseña de '+seleccionado.email+'.')) return;
+  bloquear(true); iniciarReloj('estadoPassword','Actualizando contraseña');
+  google.script.run.withSuccessHandler(res=>{ $('passwordNueva').value=''; terminarAccion('estadoPassword',res); }).withFailureHandler(error=>fallarAccion('estadoPassword',error)).panelCambiarPasswordUsuario(seleccionado.email,password,exigir);
+}
+
 function terminarAccion(id,res){ bloquear(false); detenerReloj(); setEstado(id,(res&&res.message)||'Operación finalizada.'); verAulas(true); }
 function fallarAccion(id,error){ bloquear(false); detenerReloj(); setEstado(id,error.message||error); }
-function bloquear(v){ ['btnAgregar','btnMover','btnRetirar','btnAulas','btnProfesorAgregar','btnProfesorRetirar'].forEach(id=>$(id).disabled=v||!seleccionado); if(!v) actualizarBotones(); }
+function bloquear(v){ ['btnAgregar','btnMover','btnRetirar','btnAulas','btnProfesorAgregar','btnProfesorRetirar','btnPassword'].forEach(id=>$(id).disabled=v||!seleccionado); if(!v) actualizarBotones(); }
 function iniciarReloj(id,texto){ detenerReloj(); inicioReloj=Date.now(); setEstado(id,texto+'... 0 s'); reloj=setInterval(()=>setEstado(id,texto+'... '+Math.round((Date.now()-inicioReloj)/1000)+' s'),1000); }
 function detenerReloj(){ if(reloj) clearInterval(reloj); reloj=null; }
 function copiarCorreo(){ if(!seleccionado) return; navigator.clipboard.writeText(seleccionado.email||''); setEstado('estadoBusqueda','Correo copiado: '+seleccionado.email); }
