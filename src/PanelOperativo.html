@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{--red:#b71c1c;--border:#dedede;--muted:#666;--bg:#f7f7f7;--soft:#fff3f3}
+    *{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;margin:0;padding:12px;background:#fff;color:#222;font-size:13px}
+    h2{font-size:16px;margin:0 0 12px}
+    label{display:block;font-weight:bold;margin:12px 0 5px}
+    input,select,button{width:100%;font-size:14px;border-radius:8px;padding:10px}
+    input,select{border:1px solid var(--border);background:#fff}
+    button{border:0;background:var(--red);color:white;font-weight:bold;cursor:pointer;margin-top:8px}
+    button.secondary{background:#333}
+    button.ghost{background:#eee;color:#222}
+    button:disabled{opacity:.55;cursor:default}
+    .row{display:flex;gap:8px}
+    .row>*{flex:1}
+    .status{margin:10px 0;color:var(--muted);font-size:12px;line-height:1.35}
+    .card{border:1px solid var(--border);border-radius:10px;padding:10px;margin:8px 0;background:#fff;cursor:pointer}
+    .card.selected{border-color:var(--red);background:var(--soft)}
+    .name{font-weight:bold;margin-bottom:3px}
+    .email{font-size:12px;color:#333;word-break:break-all}
+    .ou{font-size:11px;color:var(--muted);margin-top:3px}
+    .badge{display:inline-block;font-size:10px;border-radius:999px;padding:2px 6px;background:#eee;margin-top:5px}
+    .section{border-top:1px solid #eee;margin-top:14px;padding-top:12px}
+    .courses{max-height:220px;overflow:auto;background:var(--bg);border-radius:8px;padding:6px;margin-top:8px}
+    .course{padding:7px;border-bottom:1px solid #e5e5e5}
+    .course:last-child{border-bottom:0}
+    .course-title{font-weight:bold;font-size:12px}
+    .course-meta{font-size:11px;color:var(--muted);margin-top:2px}
+    .empty{color:var(--muted);font-size:12px;padding:8px}
+  </style>
+</head>
+<body>
+  <h2>Panel operativo</h2>
+
+  <label>Tipo</label>
+  <select id="tipo" onchange="limpiarAulas()">
+    <option value="Alumno">Alumno</option>
+    <option value="Profesor">Profesor</option>
+  </select>
+
+  <label>Buscar usuario</label>
+  <input id="busqueda" placeholder="Nombre, apellido, correo u OU" autocomplete="off" oninput="programarBusqueda()">
+  <div id="estadoBusqueda" class="status">Escribe al menos 2 caracteres.</div>
+  <div id="resultados"></div>
+
+  <div class="section">
+    <div class="row">
+      <button class="secondary" onclick="verAulas()" id="btnAulas" disabled>Ver aulas activas</button>
+      <button class="ghost" onclick="copiarCorreo()" id="btnCopiar" disabled>Copiar correo</button>
+    </div>
+    <div id="estadoAulas" class="status"></div>
+    <div id="aulas" class="courses" style="display:none"></div>
+  </div>
+
+  <div class="section" id="bloqueMover">
+    <label>Mover alumno</label>
+    <select id="nivel" onchange="actualizarSecciones()">
+      <option value="">Nivel</option>
+      <option value="E.B.P.">E.B.P.</option>
+      <option value="E.M.G.">E.M.G.</option>
+    </select>
+
+    <div class="row">
+      <select id="origen" onchange="actualizarDestinos()"><option value="">Origen</option></select>
+      <select id="destino"><option value="">Destino</option></select>
+    </div>
+
+    <button onclick="prepararMovimiento()" id="btnMover" disabled>Preparar movimiento</button>
+    <div id="estadoMover" class="status">Selecciona un alumno para preparar un cambio de sección.</div>
+  </div>
+
+<script>
+let timer=null;
+let seleccionado=null;
+let secciones=[];
+
+window.addEventListener('load',()=>{
+  google.script.run
+    .withSuccessHandler(datos=>{secciones=datos||[]; actualizarSecciones();})
+    .withFailureHandler(error=>{document.getElementById('estadoMover').textContent=error.message||error;})
+    .panelObtenerSecciones();
+});
+
+function programarBusqueda(){
+  clearTimeout(timer);
+  timer=setTimeout(buscar,300);
+}
+
+function buscar(){
+  const texto=document.getElementById('busqueda').value.trim();
+  const cont=document.getElementById('resultados');
+  const estado=document.getElementById('estadoBusqueda');
+  seleccionado=null;
+  actualizarBotones();
+  limpiarAulas();
+
+  if(texto.length<2){
+    cont.innerHTML='';
+    estado.textContent='Escribe al menos 2 caracteres.';
+    return;
+  }
+
+  estado.textContent='Buscando en Google Admin...';
+  cont.innerHTML='';
+
+  google.script.run
+    .withSuccessHandler(datos=>{
+      const usuarios=datos||[];
+      estado.textContent=usuarios.length ? usuarios.length+' resultado(s).' : 'Sin resultados.';
+      renderUsuarios(usuarios);
+    })
+    .withFailureHandler(error=>{
+      estado.textContent=error.message||error;
+    })
+    .panelBuscarUsuarios(texto);
+}
+
+function renderUsuarios(usuarios){
+  const cont=document.getElementById('resultados');
+  cont.innerHTML='';
+
+  usuarios.forEach(usuario=>{
+    const div=document.createElement('div');
+    div.className='card';
+    div.onclick=()=>seleccionarUsuario(usuario,div);
+    div.innerHTML=`
+      <div class="name">${esc(usuario.fullName||'(Sin nombre)')}</div>
+      <div class="email">${esc(usuario.email||'')}</div>
+      <div class="ou">${esc(usuario.orgUnitPath||'')}</div>
+      ${(usuario.suspended||usuario.archived)?'<span class="badge">Suspendido/archivado</span>':''}
+    `;
+    cont.appendChild(div);
+  });
+}
+
+function seleccionarUsuario(usuario,elemento){
+  seleccionado=usuario;
+  document.querySelectorAll('.card').forEach(card=>card.classList.remove('selected'));
+  elemento.classList.add('selected');
+  document.getElementById('estadoMover').textContent='Seleccionado: '+usuario.email;
+  actualizarBotones();
+  limpiarAulas();
+}
+
+function actualizarBotones(){
+  const hay=!!(seleccionado&&seleccionado.email);
+  document.getElementById('btnAulas').disabled=!hay;
+  document.getElementById('btnCopiar').disabled=!hay;
+  document.getElementById('btnMover').disabled=!hay || document.getElementById('tipo').value!=='Alumno';
+  document.getElementById('bloqueMover').style.display=document.getElementById('tipo').value==='Alumno'?'block':'none';
+}
+
+function limpiarAulas(){
+  document.getElementById('aulas').style.display='none';
+  document.getElementById('aulas').innerHTML='';
+  document.getElementById('estadoAulas').textContent='';
+  actualizarBotones();
+}
+
+function verAulas(){
+  if(!seleccionado) return;
+  const estado=document.getElementById('estadoAulas');
+  const cont=document.getElementById('aulas');
+  estado.textContent='Consultando Classroom...';
+  cont.style.display='none';
+  cont.innerHTML='';
+
+  google.script.run
+    .withSuccessHandler(aulas=>{
+      aulas=aulas||[];
+      estado.textContent=aulas.length+' aula(s) activa(s).';
+      cont.style.display='block';
+      cont.innerHTML='';
+      if(!aulas.length){cont.innerHTML='<div class="empty">Sin aulas activas.</div>'; return;}
+      aulas.forEach(a=>{
+        const div=document.createElement('div');
+        div.className='course';
+        div.innerHTML=`
+          <div class="course-title">${esc(a.name||'')}</div>
+          <div class="course-meta">${esc(a.section||'Sin sección')} · ${esc(a.id||'')}</div>
+        `;
+        cont.appendChild(div);
+      });
+    })
+    .withFailureHandler(error=>{estado.textContent=error.message||error;})
+    .panelListarAulasUsuario(seleccionado.email,document.getElementById('tipo').value);
+}
+
+function actualizarSecciones(){
+  const nivel=document.getElementById('nivel').value;
+  const origen=document.getElementById('origen');
+  origen.innerHTML='<option value="">Origen</option>';
+
+  secciones
+    .filter(s=>!nivel||s.nivel===nivel)
+    .forEach(s=>{
+      const opt=document.createElement('option');
+      opt.value=s.nomenclatura;
+      opt.textContent=s.nomenclatura;
+      origen.appendChild(opt);
+    });
+
+  actualizarDestinos();
+}
+
+function actualizarDestinos(){
+  const nivel=document.getElementById('nivel').value;
+  const origenValor=document.getElementById('origen').value;
+  const destino=document.getElementById('destino');
+  destino.innerHTML='<option value="">Destino</option>';
+
+  if(!origenValor) return;
+  const prefijo=origenValor.substring(0,3);
+
+  secciones
+    .filter(s=>s.nivel===nivel)
+    .filter(s=>s.prefijo===prefijo)
+    .filter(s=>s.nomenclatura!==origenValor)
+    .forEach(s=>{
+      const opt=document.createElement('option');
+      opt.value=s.nomenclatura;
+      opt.textContent=s.nomenclatura;
+      destino.appendChild(opt);
+    });
+}
+
+function prepararMovimiento(){
+  if(!seleccionado) return;
+  const nivel=document.getElementById('nivel').value;
+  const origen=document.getElementById('origen').value;
+  const destino=document.getElementById('destino').value;
+  const estado=document.getElementById('estadoMover');
+  estado.textContent='Preparando fila...';
+
+  google.script.run
+    .withSuccessHandler(res=>{estado.textContent=res&&res.message?res.message:'Movimiento preparado.';})
+    .withFailureHandler(error=>{estado.textContent=error.message||error;})
+    .panelPrepararMoverAlumno(seleccionado.email,nivel,origen,destino);
+}
+
+function copiarCorreo(){
+  if(!seleccionado) return;
+  navigator.clipboard.writeText(seleccionado.email||'');
+  document.getElementById('estadoBusqueda').textContent='Correo copiado: '+seleccionado.email;
+}
+
+function esc(value){
+  return String(value||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+</script>
+</body>
+</html>
