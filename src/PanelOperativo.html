@@ -37,7 +37,7 @@
 
   <label>Buscar usuario</label>
   <input id="busqueda" placeholder="Nombre, apellido, correo u OU" autocomplete="off" oninput="programarBusqueda()">
-  <div id="estadoBusqueda" class="status">Escribe al menos 2 caracteres.</div>
+  <div id="estadoBusqueda" class="status">Cargando usuarios locales...</div>
   <div id="resultados"></div>
 
   <div class="section">
@@ -78,22 +78,58 @@
   </div>
 
 <script>
-let timer=null, seleccionado=null, secciones=[], reloj=null, inicioReloj=0, accionActual='';
+let timer=null, seleccionado=null, secciones=[], reloj=null, inicioReloj=0;
+let usuariosCache=[], cacheUsuariosCargado=false;
 
 window.addEventListener('load',()=>{
   google.script.run.withSuccessHandler(datos=>{secciones=datos||[]; actualizarTodasLasSecciones();})
     .withFailureHandler(error=>setEstado('estadoMover',error.message||error)).panelObtenerSecciones();
+
+  google.script.run.withSuccessHandler(res=>{
+    usuariosCache=(res&&res.usuarios)?res.usuarios:(Array.isArray(res)?res:[]);
+    cacheUsuariosCargado=true;
+    setEstado('estadoBusqueda','Lista local cargada: '+usuariosCache.length+' usuarios.');
+    if($('busqueda').value.trim().length>=2) buscar();
+  }).withFailureHandler(error=>{
+    cacheUsuariosCargado=true;
+    setEstado('estadoBusqueda','No se pudo cargar la lista local: '+(error.message||error));
+  }).panelObtenerUsuariosCache();
 });
 
-function programarBusqueda(){ clearTimeout(timer); timer=setTimeout(buscar,300); }
+function programarBusqueda(){ clearTimeout(timer); timer=setTimeout(buscar,80); }
 function cambiarTipo(){ limpiarAulas(); actualizarBotones(); }
 
 function buscar(){
   const texto=$('busqueda').value.trim(); seleccionado=null; actualizarBotones(); limpiarAulas(); $('resultados').innerHTML='';
-  if(texto.length<2){setEstado('estadoBusqueda','Escribe al menos 2 caracteres.'); return;}
-  iniciarReloj('estadoBusqueda','Buscando');
-  google.script.run.withSuccessHandler(usuarios=>{detenerReloj(); usuarios=usuarios||[]; setEstado('estadoBusqueda',usuarios.length?usuarios.length+' resultado(s).':'Sin resultados.'); renderUsuarios(usuarios);})
-    .withFailureHandler(error=>{detenerReloj(); setEstado('estadoBusqueda',error.message||error);}).panelBuscarUsuarios(texto);
+  if(texto.length<2){setEstado('estadoBusqueda',cacheUsuariosCargado?'Escribe al menos 2 caracteres.':'Cargando usuarios locales...'); return;}
+  if(!cacheUsuariosCargado){setEstado('estadoBusqueda','Cargando usuarios locales...'); return;}
+
+  const usuarios=buscarEnCache(texto);
+  if(usuarios.length || !esCorreo(texto)){
+    setEstado('estadoBusqueda',usuarios.length?usuarios.length+' resultado(s).':'Sin resultados en la lista local.');
+    renderUsuarios(usuarios);
+    return;
+  }
+
+  iniciarReloj('estadoBusqueda','Buscando correo en Admin');
+  google.script.run.withSuccessHandler(datos=>{
+    detenerReloj(); const encontrados=datos||[];
+    setEstado('estadoBusqueda',encontrados.length?encontrados.length+' resultado(s).':'Sin resultados.');
+    renderUsuarios(encontrados);
+  }).withFailureHandler(error=>{
+    detenerReloj(); setEstado('estadoBusqueda',error.message||error);
+  }).panelBuscarUsuarios(texto);
+}
+
+function buscarEnCache(texto){
+  const terms=normalizarTexto(texto).split(' ').filter(Boolean);
+  const out=[];
+  for(const usuario of usuariosCache){
+    if(out.length>=30) break;
+    const haystack=normalizarTexto((usuario.fullName||'')+' '+(usuario.givenName||'')+' '+(usuario.familyName||'')+' '+(usuario.email||'')+' '+(usuario.orgUnitPath||''));
+    if(terms.every(term=>haystack.includes(term))) out.push(usuario);
+  }
+  return out;
 }
 
 function renderUsuarios(usuarios){
@@ -157,7 +193,7 @@ function agregarAlumnoSeccion(){
 
 function moverAlumnoSeccion(){
   if(!seleccionado) return; const nivel=$('nivel').value, origen=$('origen').value, destino=$('destino').value; if(!nivel||!origen||!destino){setEstado('estadoMover','Selecciona nivel, origen y destino.'); return;}
-  if(!confirm('Se moverá '+seleccionado.email+' de '+origen+' a '+destino+'. Primero sale del origen y luego entra al destino. ¿Continuar?')) return;
+  if(!confirm('Se moverá '+seleccionado.email+' de '+origen+' a '+destino+'. ¿Continuar?')) return;
   bloquear(true); iniciarReloj('estadoMover','Moviendo'); google.script.run.withSuccessHandler(res=>{bloquear(false); detenerReloj(); setEstado('estadoMover',res.message||'Movimiento finalizado.'); verAulas(true);}).withFailureHandler(error=>{bloquear(false); detenerReloj(); setEstado('estadoMover',error.message||error);}).panelMoverAlumnoSeccion(seleccionado.email,nivel,origen,destino);
 }
 
@@ -168,11 +204,13 @@ function retirarAlumnoSeccion(){
 }
 
 function bloquear(v){ ['btnAgregar','btnMover','btnRetirar','btnAulas'].forEach(id=>$(id).disabled=v||!seleccionado); }
-function iniciarReloj(id,texto){ detenerReloj(); accionActual=id; inicioReloj=Date.now(); setEstado(id,texto+'... 0 s'); reloj=setInterval(()=>setEstado(id,texto+'... '+Math.round((Date.now()-inicioReloj)/1000)+' s'),1000); }
+function iniciarReloj(id,texto){ detenerReloj(); inicioReloj=Date.now(); setEstado(id,texto+'... 0 s'); reloj=setInterval(()=>setEstado(id,texto+'... '+Math.round((Date.now()-inicioReloj)/1000)+' s'),1000); }
 function detenerReloj(){ if(reloj) clearInterval(reloj); reloj=null; }
 function copiarCorreo(){ if(!seleccionado) return; navigator.clipboard.writeText(seleccionado.email||''); setEstado('estadoBusqueda','Correo copiado: '+seleccionado.email); }
 function setEstado(id,texto){ $(id).textContent=texto||''; }
 function $(id){ return document.getElementById(id); }
+function normalizarTexto(value){return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');}
+function esCorreo(value){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value||'').trim());}
 function esc(value){ return String(value||'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 </script>
 </body>
