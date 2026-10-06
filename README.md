@@ -2,9 +2,19 @@
 
 Herramienta interna en Google Apps Script para administrar Google Classroom desde Google Sheets.
 
-## Estado actual
+## Flujo de trabajo
 
-Proyecto migrándose a flujo con `clasp` para evitar copiar y pegar código manualmente en Apps Script.
+Este repositorio se despliega a Google Apps Script mediante GitHub Actions y `clasp`.
+
+Flujo previsto:
+
+```text
+ChatGPT / GitHub → GitHub Actions → clasp push → Apps Script → Google Sheets
+```
+
+Así se evita copiar y pegar código manualmente en el editor de Apps Script.
+
+## Estado actual
 
 Funciones ya desarrolladas en la versión de trabajo:
 
@@ -21,54 +31,52 @@ Funciones ya desarrolladas en la versión de trabajo:
 
 ```text
 cm/
+├── .github/workflows/
+│   ├── import-apps-script.yml
+│   └── deploy-apps-script.yml
 ├── .clasp.example.json
 ├── .gitignore
 ├── README.md
 └── src/
-    ├── Código.js / Code.js
+    ├── Code.js / Código.js
     └── appsscript.json
 ```
 
-El archivo real `.clasp.json` no debe subirse al repositorio porque contiene el `scriptId` del proyecto de Apps Script.
+## Secretos requeridos en GitHub Actions
 
-## Configuración local
+En el repositorio, configurar:
 
-Instalar `clasp`:
+`Settings` → `Secrets and variables` → `Actions` → `New repository secret`
 
-```bash
-npm install -g @google/clasp
+Secretos necesarios:
+
+```text
+APPS_SCRIPT_ID
+CLASPRC_JSON
 ```
 
-Iniciar sesión con la cuenta correcta:
+`APPS_SCRIPT_ID` contiene el ID del proyecto de Apps Script.
 
-```bash
-clasp login --user llrr
-```
+`CLASPRC_JSON` contiene el contenido completo del archivo local `.clasprc.json` generado por `clasp login`.
 
-Crear el archivo local `.clasp.json` a partir del ejemplo:
+Ese archivo no debe subirse al repositorio.
 
-```bash
-cp .clasp.example.json .clasp.json
-```
+## Importar el proyecto actual desde Apps Script
 
-Editar `.clasp.json` y colocar el Script ID real.
+Después de configurar los secretos:
 
-Luego traer el código actual del proyecto de Apps Script:
+1. Ir a `Actions`.
+2. Abrir `Import Apps Script`.
+3. Pulsar `Run workflow`.
 
-```bash
-clasp pull --user llrr
-```
+Ese workflow trae el código actual desde Apps Script y lo guarda en `src/`.
 
-Después de revisar que se hayan creado los archivos dentro de `src/`, subirlos a GitHub:
+## Desplegar cambios hacia Apps Script
 
-```bash
-git add .
-git commit -m "Import current Apps Script project"
-git push
-```
+Después de que el código esté en GitHub y se hayan hecho cambios:
 
-Para enviar cambios desde el repo/local hacia Apps Script:
+1. Ir a `Actions`.
+2. Abrir `Deploy Apps Script`.
+3. Pulsar `Run workflow`.
 
-```bash
-clasp push --user llrr
-```
+Ese workflow ejecuta `clasp push --force` y actualiza el proyecto de Apps Script.
