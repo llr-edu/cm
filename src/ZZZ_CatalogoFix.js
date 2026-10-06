@@ -1,21 +1,49 @@
 /****************************************************
  * Ajustes de sincronización del catálogo
- * Normaliza nomenclaturas con ceros a la izquierda.
+ * Usa nomenclaturas completas de sección: 072A, 072B, 072C.
+ * Mantiene compatibilidad con códigos generales tipo 072ABC.
  ****************************************************/
 
 function normalizarNomenclatura_(value) {
   if (value === null || value === undefined) return '';
-  let text = String(value).trim();
+  let text = String(value).trim().toUpperCase();
   if (!text) return '';
 
-  // Corrige valores que Sheets pueda entregar como 11, 11.0 o 11,0
-  text = text.replace(/\.0$/, '').replace(/,0$/, '');
+  // Corrige valores que Sheets pueda entregar como 72, 72.0, 72,0 o con espacios.
+  text = text
+    .replace(/\.0$/, '')
+    .replace(/,0$/, '')
+    .replace(/\s+/g, '')
+    .replace(/-/g, '');
 
-  if (/^\d+$/.test(text) && text.length < 3) {
-    return text.padStart(3, '0');
+  const match = text.match(/^(\d{1,3})([A-Z]+)?$/);
+  if (match) {
+    const base = match[1].padStart(3, '0');
+    const sufijo = match[2] || '';
+    return base + sufijo;
   }
 
   return text;
+}
+
+function obtenerBaseNomenclatura_(value) {
+  const normalizada = normalizarNomenclatura_(value);
+  const match = normalizada.match(/^(\d{3})/);
+  return match ? match[1] : normalizada;
+}
+
+function obtenerGeneralNomenclatura_(value) {
+  const base = obtenerBaseNomenclatura_(value);
+  return base ? base + 'ABC' : '';
+}
+
+function esNomenclaturaPermitida_(nomenclatura, validas) {
+  const normalizada = normalizarNomenclatura_(nomenclatura);
+  if (!normalizada) return false;
+  if (!validas || !validas.length) return true;
+
+  const base = obtenerBaseNomenclatura_(normalizada);
+  return validas.includes(normalizada) || validas.includes(base);
 }
 
 function normalizarCourseId_(value) {
@@ -78,6 +106,8 @@ function sincronizarCatalogoAulas() {
   const rows = [];
   const ahora = new Date();
   const errores = [];
+  const nomenclaturasEncontradas = new Set();
+  const ejemplosSaltados = [];
   const diagnostico = {
     fuentes: fuentes.length,
     filasLeidas: 0,
@@ -105,6 +135,7 @@ function sincronizarCatalogoAulas() {
         const descripcion = String(row[fuente.colDescripcion - 1] || '').trim();
         const nomenclatura = normalizarNomenclatura_(row[fuente.colNomenclatura - 1]);
 
+        if (nomenclatura) nomenclaturasEncontradas.add(nomenclatura);
         if (!courseId) return;
         diagnostico.filasConCodigo++;
 
@@ -113,8 +144,9 @@ function sincronizarCatalogoAulas() {
           return;
         }
 
-        if (validas.length && !validas.includes(nomenclatura)) {
+        if (!esNomenclaturaPermitida_(nomenclatura, validas)) {
           diagnostico.filasSaltadasPorNomenclatura++;
+          if (ejemplosSaltados.length < 8) ejemplosSaltados.push(nomenclatura);
           return;
         }
 
@@ -152,12 +184,14 @@ function sincronizarCatalogoAulas() {
     catalog.autoResizeColumns(1, catalog.getLastColumn());
   }
 
+  const muestraNomenclaturas = Array.from(nomenclaturasEncontradas).sort().slice(0, 20).join(', ');
   const detalle =
     'Fuentes: ' + fuentes.length +
     ' | Filas leídas: ' + diagnostico.filasLeidas +
     ' | Con código: ' + diagnostico.filasConCodigo +
     ' | Sin nomenclatura: ' + diagnostico.filasSinNomenclatura +
-    ' | Saltadas por nomenclatura: ' + diagnostico.filasSaltadasPorNomenclatura;
+    ' | Saltadas por nomenclatura: ' + diagnostico.filasSaltadasPorNomenclatura +
+    ' | Muestra: ' + muestraNomenclaturas;
 
   registrarLog_('Sincronizar catálogo de aulas', detalle, rows.length + ' aulas sincronizadas; errores: ' + errores.length);
 
@@ -170,6 +204,8 @@ function sincronizarCatalogoAulas() {
     'Filas con código: ' + diagnostico.filasConCodigo + '\n' +
     'Sin nomenclatura: ' + diagnostico.filasSinNomenclatura + '\n' +
     'Saltadas por nomenclatura: ' + diagnostico.filasSaltadasPorNomenclatura +
+    (muestraNomenclaturas ? '\nNomenclaturas detectadas: ' + muestraNomenclaturas : '') +
+    (ejemplosSaltados.length ? '\nEjemplos saltados: ' + ejemplosSaltados.join(', ') : '') +
     (errores.length ? '\n\nPrimer error:\n' + errores[0] : '')
   );
 }
@@ -186,10 +222,15 @@ function obtenerAulasCatalogo_(nivel, nomenclatura) {
   const colNomenclatura = buscarColumna_(headers, 'Nomenclatura');
   const colCourseId = buscarColumna_(headers, 'Course ID');
   const target = normalizarNomenclatura_(nomenclatura);
+  const general = obtenerGeneralNomenclatura_(target);
 
   return data.slice(1)
     .filter(row => String(row[colNivel] || '').trim() === nivel)
-    .filter(row => normalizarNomenclatura_(row[colNomenclatura]) === target)
+    .filter(row => {
+      const actual = normalizarNomenclatura_(row[colNomenclatura]);
+      return actual === target || actual === general;
+    })
     .map(row => normalizarCourseId_(row[colCourseId]))
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter((courseId, index, all) => all.indexOf(courseId) === index);
 }
