@@ -10,9 +10,10 @@ function panelAulasPorSeccion_(nivel, nomenclatura, incluirGenerales) {
   const colNivel = buscarColumna_(headers, 'Nivel');
   const colNomenclatura = buscarColumna_(headers, 'Nomenclatura');
   const colCourseId = buscarColumna_(headers, 'Course ID');
-  const colNombreClassroom = panelBuscarColumnaOpcional_(headers, 'Nombre Classroom');
   const colNombreFuente = panelBuscarColumnaOpcional_(headers, 'Nombre fuente');
   const colMateria = panelBuscarColumnaOpcional_(headers, 'Materia Classroom');
+  const colNombreClassroom = panelBuscarColumnaOpcional_(headers, 'Nombre Classroom');
+  const colDescripcionFuente = panelBuscarColumnaOpcional_(headers, 'Descripción fuente');
 
   const target = normalizarNomenclatura_(nomenclatura);
   const general = obtenerGeneralNomenclatura_(target);
@@ -32,17 +33,34 @@ function panelAulasPorSeccion_(nivel, nomenclatura, incluirGenerales) {
     aulas.push({
       courseId: courseId,
       nomenclatura: actual,
-      nombre: panelValorColumna_(row, colNombreClassroom) || panelValorColumna_(row, colNombreFuente) || panelValorColumna_(row, colMateria) || courseId
+      titulo: panelTituloOrdenAula_(row, colNombreFuente, colMateria, colNombreClassroom, colDescripcionFuente)
     });
   });
 
   return aulas
     .sort((a, b) => {
-      const byName = panelOrdenTexto_(a.nombre).localeCompare(panelOrdenTexto_(b.nombre), 'es', { sensitivity: 'base', numeric: true });
-      if (byName !== 0) return byName;
+      const byTitle = panelOrdenTexto_(a.titulo).localeCompare(panelOrdenTexto_(b.titulo), 'es', { sensitivity: 'base', numeric: true });
+      if (byTitle !== 0) return byTitle;
       return panelOrdenTexto_(a.nomenclatura).localeCompare(panelOrdenTexto_(b.nomenclatura), 'es', { sensitivity: 'base', numeric: true });
     })
+    .reverse()
     .map(aula => aula.courseId);
+}
+
+function panelTituloOrdenAula_(row, colNombreFuente, colMateria, colNombreClassroom, colDescripcionFuente) {
+  const valores = [
+    panelValorColumna_(row, colNombreFuente),
+    panelValorColumna_(row, colMateria),
+    panelValorColumna_(row, colNombreClassroom),
+    panelValorColumna_(row, colDescripcionFuente)
+  ].filter(Boolean);
+
+  for (let i = 0; i < valores.length; i++) {
+    const valor = valores[i];
+    if (!/^\d/.test(valor)) return valor;
+  }
+
+  return valores[0] || '';
 }
 
 function panelAplicarAlumnoEnAulas_(correo, aulas, accion) {
