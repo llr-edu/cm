@@ -12,32 +12,25 @@
     input,select,button{width:100%;font-size:14px;border-radius:8px;padding:10px}
     input,select{border:1px solid var(--border);background:#fff}
     button{border:0;background:var(--red);color:white;font-weight:bold;cursor:pointer;margin-top:8px}
-    button.secondary{background:#333}
-    button.ghost{background:#eee;color:#222}
-    button:disabled{opacity:.55;cursor:default}
-    .row{display:flex;gap:8px}
-    .row>*{flex:1}
-    .status{margin:10px 0;color:var(--muted);font-size:12px;line-height:1.35}
+    button.secondary{background:#333}.ghost{background:#eee;color:#222}.danger{background:#7f1111}
+    button:disabled{opacity:.55;cursor:default}.row{display:flex;gap:8px}.row>*{flex:1}
+    .status{margin:8px 0;color:var(--muted);font-size:12px;line-height:1.35}
     .card{border:1px solid var(--border);border-radius:10px;padding:10px;margin:8px 0;background:#fff;cursor:pointer}
     .card.selected{border-color:var(--red);background:var(--soft)}
-    .name{font-weight:bold;margin-bottom:3px}
-    .email{font-size:12px;color:#333;word-break:break-all}
-    .ou{font-size:11px;color:var(--muted);margin-top:3px}
+    .name{font-weight:bold;margin-bottom:3px}.email{font-size:12px;color:#333;word-break:break-all}.ou,.meta{font-size:11px;color:var(--muted);margin-top:3px}
     .badge{display:inline-block;font-size:10px;border-radius:999px;padding:2px 6px;background:#eee;margin-top:5px}
     .section{border-top:1px solid #eee;margin-top:14px;padding-top:12px}
     .courses{max-height:220px;overflow:auto;background:var(--bg);border-radius:8px;padding:6px;margin-top:8px}
-    .course{padding:7px;border-bottom:1px solid #e5e5e5}
-    .course:last-child{border-bottom:0}
-    .course-title{font-weight:bold;font-size:12px}
-    .course-meta{font-size:11px;color:var(--muted);margin-top:2px}
-    .empty{color:var(--muted);font-size:12px;padding:8px}
+    .course{padding:7px;border-bottom:1px solid #e5e5e5}.course:last-child{border-bottom:0}
+    .course-title{font-weight:bold;font-size:12px}.course-meta{font-size:11px;color:var(--muted);margin-top:2px}
+    .empty{color:var(--muted);font-size:12px;padding:8px}.check{display:flex;align-items:center;gap:8px;margin-top:8px}.check input{width:auto}
   </style>
 </head>
 <body>
   <h2>Panel operativo</h2>
 
   <label>Tipo</label>
-  <select id="tipo" onchange="limpiarAulas()">
+  <select id="tipo" onchange="cambiarTipo()">
     <option value="Alumno">Alumno</option>
     <option value="Profesor">Profesor</option>
   </select>
@@ -49,7 +42,7 @@
 
   <div class="section">
     <div class="row">
-      <button class="secondary" onclick="verAulas()" id="btnAulas" disabled>Ver aulas activas</button>
+      <button class="secondary" onclick="verAulas(false)" id="btnAulas" disabled>Ver aulas activas</button>
       <button class="ghost" onclick="copiarCorreo()" id="btnCopiar" disabled>Copiar correo</button>
     </div>
     <div id="estadoAulas" class="status"></div>
@@ -58,270 +51,129 @@
 
   <div class="section" id="bloqueAgregar">
     <label>Agregar alumno a sección</label>
-    <select id="nivelAgregar" onchange="actualizarSeccionesAgregar()">
-      <option value="">Nivel</option>
-      <option value="E.B.P.">E.B.P.</option>
-      <option value="E.M.G.">E.M.G.</option>
-    </select>
-
-    <select id="seccionAgregar">
-      <option value="">Sección destino</option>
-    </select>
-
+    <select id="nivelAgregar" onchange="actualizarSeccionesAgregar()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
+    <select id="seccionAgregar"><option value="">Sección destino</option></select>
     <button onclick="agregarAlumnoSeccion()" id="btnAgregar" disabled>Agregar ahora</button>
     <div id="estadoAgregar" class="status">Selecciona un alumno para agregarlo a una sección.</div>
   </div>
 
   <div class="section" id="bloqueMover">
     <label>Mover alumno</label>
-    <select id="nivel" onchange="actualizarSecciones()">
-      <option value="">Nivel</option>
-      <option value="E.B.P.">E.B.P.</option>
-      <option value="E.M.G.">E.M.G.</option>
-    </select>
-
+    <select id="nivel" onchange="actualizarSecciones()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
     <div class="row">
       <select id="origen" onchange="actualizarDestinos()"><option value="">Origen</option></select>
       <select id="destino"><option value="">Destino</option></select>
     </div>
+    <button onclick="moverAlumnoSeccion()" id="btnMover" disabled>Mover ahora</button>
+    <div id="estadoMover" class="status">Al ver aulas activas, el origen se completa automáticamente si el catálogo lo permite.</div>
+  </div>
 
-    <button onclick="prepararMovimiento()" id="btnMover" disabled>Preparar movimiento</button>
-    <div id="estadoMover" class="status">Selecciona un alumno para preparar un cambio de sección.</div>
+  <div class="section" id="bloqueRetirar">
+    <label>Retirar alumno de aulas</label>
+    <select id="nivelRetirar" onchange="actualizarSeccionesRetirar()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
+    <select id="seccionRetirar"><option value="">Sección</option></select>
+    <label class="check"><input type="checkbox" id="incluirGenerales" checked> Incluir aulas generales del año</label>
+    <button class="danger" onclick="retirarAlumnoSeccion()" id="btnRetirar" disabled>Retirar ahora</button>
+    <div id="estadoRetirar" class="status">Retira al alumno de todas las aulas de la sección seleccionada.</div>
   </div>
 
 <script>
-let timer=null;
-let seleccionado=null;
-let secciones=[];
+let timer=null, seleccionado=null, secciones=[], reloj=null, inicioReloj=0, accionActual='';
 
 window.addEventListener('load',()=>{
-  google.script.run
-    .withSuccessHandler(datos=>{
-      secciones=datos||[];
-      actualizarSecciones();
-      actualizarSeccionesAgregar();
-    })
-    .withFailureHandler(error=>{document.getElementById('estadoMover').textContent=error.message||error;})
-    .panelObtenerSecciones();
+  google.script.run.withSuccessHandler(datos=>{secciones=datos||[]; actualizarTodasLasSecciones();})
+    .withFailureHandler(error=>setEstado('estadoMover',error.message||error)).panelObtenerSecciones();
 });
 
-function programarBusqueda(){
-  clearTimeout(timer);
-  timer=setTimeout(buscar,300);
-}
+function programarBusqueda(){ clearTimeout(timer); timer=setTimeout(buscar,300); }
+function cambiarTipo(){ limpiarAulas(); actualizarBotones(); }
 
 function buscar(){
-  const texto=document.getElementById('busqueda').value.trim();
-  const cont=document.getElementById('resultados');
-  const estado=document.getElementById('estadoBusqueda');
-  seleccionado=null;
-  actualizarBotones();
-  limpiarAulas();
-
-  if(texto.length<2){
-    cont.innerHTML='';
-    estado.textContent='Escribe al menos 2 caracteres.';
-    return;
-  }
-
-  estado.textContent='Buscando en Google Admin...';
-  cont.innerHTML='';
-
-  google.script.run
-    .withSuccessHandler(datos=>{
-      const usuarios=datos||[];
-      estado.textContent=usuarios.length ? usuarios.length+' resultado(s).' : 'Sin resultados.';
-      renderUsuarios(usuarios);
-    })
-    .withFailureHandler(error=>{
-      estado.textContent=error.message||error;
-    })
-    .panelBuscarUsuarios(texto);
+  const texto=$('busqueda').value.trim(); seleccionado=null; actualizarBotones(); limpiarAulas(); $('resultados').innerHTML='';
+  if(texto.length<2){setEstado('estadoBusqueda','Escribe al menos 2 caracteres.'); return;}
+  iniciarReloj('estadoBusqueda','Buscando');
+  google.script.run.withSuccessHandler(usuarios=>{detenerReloj(); usuarios=usuarios||[]; setEstado('estadoBusqueda',usuarios.length?usuarios.length+' resultado(s).':'Sin resultados.'); renderUsuarios(usuarios);})
+    .withFailureHandler(error=>{detenerReloj(); setEstado('estadoBusqueda',error.message||error);}).panelBuscarUsuarios(texto);
 }
 
 function renderUsuarios(usuarios){
-  const cont=document.getElementById('resultados');
-  cont.innerHTML='';
-
+  const cont=$('resultados'); cont.innerHTML='';
   usuarios.forEach(usuario=>{
-    const div=document.createElement('div');
-    div.className='card';
-    div.onclick=()=>seleccionarUsuario(usuario,div);
-    div.innerHTML=`
-      <div class="name">${esc(usuario.fullName||'(Sin nombre)')}</div>
-      <div class="email">${esc(usuario.email||'')}</div>
-      <div class="ou">${esc(usuario.orgUnitPath||'')}</div>
-      ${(usuario.suspended||usuario.archived)?'<span class="badge">Suspendido/archivado</span>':''}
-    `;
+    const div=document.createElement('div'); div.className='card'; div.onclick=()=>seleccionarUsuario(usuario,div);
+    div.innerHTML=`<div class="name">${esc(usuario.fullName||'(Sin nombre)')}</div><div class="email">${esc(usuario.email||'')}</div><div class="ou">${esc(usuario.orgUnitPath||'')}</div>${usuario.source?`<span class="badge">${esc(usuario.source)}</span>`:''}${(usuario.suspended||usuario.archived)?'<span class="badge">Suspendido/archivado</span>':''}`;
     cont.appendChild(div);
   });
 }
 
 function seleccionarUsuario(usuario,elemento){
-  seleccionado=usuario;
-  document.querySelectorAll('.card').forEach(card=>card.classList.remove('selected'));
-  elemento.classList.add('selected');
-  document.getElementById('estadoAgregar').textContent='Seleccionado: '+usuario.email;
-  document.getElementById('estadoMover').textContent='Seleccionado: '+usuario.email;
-  actualizarBotones();
-  limpiarAulas();
+  seleccionado=usuario; document.querySelectorAll('.card').forEach(card=>card.classList.remove('selected')); elemento.classList.add('selected');
+  setEstado('estadoAgregar','Seleccionado: '+usuario.email); setEstado('estadoMover','Seleccionado: '+usuario.email); setEstado('estadoRetirar','Seleccionado: '+usuario.email);
+  actualizarBotones(); verAulas(true);
 }
 
 function actualizarBotones(){
-  const hay=!!(seleccionado&&seleccionado.email);
-  const esAlumno=document.getElementById('tipo').value==='Alumno';
-  document.getElementById('btnAulas').disabled=!hay;
-  document.getElementById('btnCopiar').disabled=!hay;
-  document.getElementById('btnAgregar').disabled=!hay || !esAlumno;
-  document.getElementById('btnMover').disabled=!hay || !esAlumno;
-  document.getElementById('bloqueAgregar').style.display=esAlumno?'block':'none';
-  document.getElementById('bloqueMover').style.display=esAlumno?'block':'none';
+  const hay=!!(seleccionado&&seleccionado.email), esAlumno=$('tipo').value==='Alumno';
+  $('btnAulas').disabled=!hay; $('btnCopiar').disabled=!hay; $('btnAgregar').disabled=!hay||!esAlumno; $('btnMover').disabled=!hay||!esAlumno; $('btnRetirar').disabled=!hay||!esAlumno;
+  $('bloqueAgregar').style.display=esAlumno?'block':'none'; $('bloqueMover').style.display=esAlumno?'block':'none'; $('bloqueRetirar').style.display=esAlumno?'block':'none';
 }
 
-function limpiarAulas(){
-  document.getElementById('aulas').style.display='none';
-  document.getElementById('aulas').innerHTML='';
-  document.getElementById('estadoAulas').textContent='';
-  actualizarBotones();
-}
+function limpiarAulas(){ $('aulas').style.display='none'; $('aulas').innerHTML=''; setEstado('estadoAulas',''); }
 
-function verAulas(){
+function verAulas(silencioso){
   if(!seleccionado) return;
-  const estado=document.getElementById('estadoAulas');
-  const cont=document.getElementById('aulas');
-  estado.textContent='Consultando Classroom...';
-  cont.style.display='none';
-  cont.innerHTML='';
-
-  google.script.run
-    .withSuccessHandler(aulas=>{
-      aulas=aulas||[];
-      estado.textContent=aulas.length+' aula(s) activa(s).';
-      cont.style.display='block';
-      cont.innerHTML='';
-      if(!aulas.length){cont.innerHTML='<div class="empty">Sin aulas activas.</div>'; return;}
-      aulas.forEach(a=>{
-        const div=document.createElement('div');
-        div.className='course';
-        div.innerHTML=`
-          <div class="course-title">${esc(a.name||'')}</div>
-          <div class="course-meta">${esc(a.section||'Sin sección')} · ${esc(a.id||'')}</div>
-        `;
-        cont.appendChild(div);
-      });
-    })
-    .withFailureHandler(error=>{estado.textContent=error.message||error;})
-    .panelListarAulasUsuario(seleccionado.email,document.getElementById('tipo').value);
+  iniciarReloj('estadoAulas','Consultando Classroom'); $('aulas').style.display='none'; $('aulas').innerHTML='';
+  google.script.run.withSuccessHandler(res=>{
+    detenerReloj(); const aulas=Array.isArray(res)?res:(res.aulas||[]); const deteccion=Array.isArray(res)?null:res.deteccion;
+    setEstado('estadoAulas',aulas.length+' aula(s) activa(s).'+(deteccion?' Origen detectado: '+deteccion.nomenclatura+'.':'')); renderAulas(aulas); if(deteccion) aplicarDeteccion(deteccion);
+  }).withFailureHandler(error=>{detenerReloj(); setEstado('estadoAulas',error.message||error);}).panelListarAulasUsuario(seleccionado.email,$('tipo').value);
 }
 
-function actualizarSeccionesAgregar(){
-  const nivel=document.getElementById('nivelAgregar').value;
-  const destino=document.getElementById('seccionAgregar');
-  destino.innerHTML='<option value="">Sección destino</option>';
+function renderAulas(aulas){
+  const cont=$('aulas'); cont.style.display='block'; cont.innerHTML='';
+  if(!aulas.length){cont.innerHTML='<div class="empty">Sin aulas activas.</div>'; return;}
+  aulas.forEach(a=>{const div=document.createElement('div'); div.className='course'; div.innerHTML=`<div class="course-title">${esc(a.name||'')}</div><div class="course-meta">${esc(a.nomenclatura||a.section||'Sin sección')} · ${esc(a.id||'')}</div>`; cont.appendChild(div);});
+}
 
-  secciones
-    .filter(s=>!nivel||s.nivel===nivel)
-    .forEach(s=>{
-      const opt=document.createElement('option');
-      opt.value=s.nomenclatura;
-      opt.textContent=s.nomenclatura;
-      destino.appendChild(opt);
-    });
+function aplicarDeteccion(d){
+  $('nivel').value=d.nivel; actualizarSecciones(); $('origen').value=d.nomenclatura; actualizarDestinos();
+  $('nivelRetirar').value=d.nivel; actualizarSeccionesRetirar(); $('seccionRetirar').value=d.nomenclatura;
+}
+
+function actualizarTodasLasSecciones(){ actualizarSecciones(); actualizarSeccionesAgregar(); actualizarSeccionesRetirar(); }
+function llenarSelect(id, nivel, placeholder){ const s=$(id); s.innerHTML='<option value="">'+placeholder+'</option>'; secciones.filter(x=>!nivel||x.nivel===nivel).forEach(x=>{const o=document.createElement('option'); o.value=x.nomenclatura; o.textContent=x.nomenclatura; s.appendChild(o);}); }
+function actualizarSeccionesAgregar(){ llenarSelect('seccionAgregar',$('nivelAgregar').value,'Sección destino'); }
+function actualizarSeccionesRetirar(){ llenarSelect('seccionRetirar',$('nivelRetirar').value,'Sección'); }
+function actualizarSecciones(){ llenarSelect('origen',$('nivel').value,'Origen'); actualizarDestinos(); }
+function actualizarDestinos(){
+  const nivel=$('nivel').value, origen=$('origen').value, destino=$('destino'); destino.innerHTML='<option value="">Destino</option>'; if(!origen) return; const prefijo=origen.substring(0,3);
+  secciones.filter(s=>s.nivel===nivel&&s.prefijo===prefijo&&s.nomenclatura!==origen).forEach(s=>{const o=document.createElement('option'); o.value=s.nomenclatura; o.textContent=s.nomenclatura; destino.appendChild(o);});
 }
 
 function agregarAlumnoSeccion(){
-  if(!seleccionado) return;
-  const nivel=document.getElementById('nivelAgregar').value;
-  const seccion=document.getElementById('seccionAgregar').value;
-  const estado=document.getElementById('estadoAgregar');
-
-  if(!nivel||!seccion){
-    estado.textContent='Selecciona nivel y sección destino.';
-    return;
-  }
-
-  const confirmar=window.confirm('Se agregará '+seleccionado.email+' a las aulas de '+seccion+'. ¿Continuar?');
-  if(!confirmar){
-    estado.textContent='No se realizó ningún cambio.';
-    return;
-  }
-
-  estado.textContent='Agregando alumno...';
-  document.getElementById('btnAgregar').disabled=true;
-
-  google.script.run
-    .withSuccessHandler(res=>{
-      actualizarBotones();
-      estado.textContent=res&&res.message?res.message:'Alumno agregado.';
-    })
-    .withFailureHandler(error=>{
-      actualizarBotones();
-      estado.textContent=error.message||error;
-    })
-    .panelAgregarAlumnoASeccion(seleccionado.email,nivel,seccion);
+  if(!seleccionado) return; const nivel=$('nivelAgregar').value, seccion=$('seccionAgregar').value; if(!nivel||!seccion){setEstado('estadoAgregar','Selecciona nivel y sección destino.'); return;}
+  if(!confirm('Se agregará '+seleccionado.email+' a las aulas de '+seccion+'. ¿Continuar?')) return;
+  bloquear(true); iniciarReloj('estadoAgregar','Agregando'); google.script.run.withSuccessHandler(res=>{bloquear(false); detenerReloj(); setEstado('estadoAgregar',res.message||'Alumno agregado.'); verAulas(true);}).withFailureHandler(error=>{bloquear(false); detenerReloj(); setEstado('estadoAgregar',error.message||error);}).panelAgregarAlumnoASeccion(seleccionado.email,nivel,seccion);
 }
 
-function actualizarSecciones(){
-  const nivel=document.getElementById('nivel').value;
-  const origen=document.getElementById('origen');
-  origen.innerHTML='<option value="">Origen</option>';
-
-  secciones
-    .filter(s=>!nivel||s.nivel===nivel)
-    .forEach(s=>{
-      const opt=document.createElement('option');
-      opt.value=s.nomenclatura;
-      opt.textContent=s.nomenclatura;
-      origen.appendChild(opt);
-    });
-
-  actualizarDestinos();
+function moverAlumnoSeccion(){
+  if(!seleccionado) return; const nivel=$('nivel').value, origen=$('origen').value, destino=$('destino').value; if(!nivel||!origen||!destino){setEstado('estadoMover','Selecciona nivel, origen y destino.'); return;}
+  if(!confirm('Se moverá '+seleccionado.email+' de '+origen+' a '+destino+'. Primero sale del origen y luego entra al destino. ¿Continuar?')) return;
+  bloquear(true); iniciarReloj('estadoMover','Moviendo'); google.script.run.withSuccessHandler(res=>{bloquear(false); detenerReloj(); setEstado('estadoMover',res.message||'Movimiento finalizado.'); verAulas(true);}).withFailureHandler(error=>{bloquear(false); detenerReloj(); setEstado('estadoMover',error.message||error);}).panelMoverAlumnoSeccion(seleccionado.email,nivel,origen,destino);
 }
 
-function actualizarDestinos(){
-  const nivel=document.getElementById('nivel').value;
-  const origenValor=document.getElementById('origen').value;
-  const destino=document.getElementById('destino');
-  destino.innerHTML='<option value="">Destino</option>';
-
-  if(!origenValor) return;
-  const prefijo=origenValor.substring(0,3);
-
-  secciones
-    .filter(s=>s.nivel===nivel)
-    .filter(s=>s.prefijo===prefijo)
-    .filter(s=>s.nomenclatura!==origenValor)
-    .forEach(s=>{
-      const opt=document.createElement('option');
-      opt.value=s.nomenclatura;
-      opt.textContent=s.nomenclatura;
-      destino.appendChild(opt);
-    });
+function retirarAlumnoSeccion(){
+  if(!seleccionado) return; const nivel=$('nivelRetirar').value, seccion=$('seccionRetirar').value, incluir=$('incluirGenerales').checked; if(!nivel||!seccion){setEstado('estadoRetirar','Selecciona nivel y sección.'); return;}
+  if(!confirm('Se retirará '+seleccionado.email+' de las aulas de '+seccion+(incluir?' incluyendo generales.':'.')+' ¿Continuar?')) return;
+  bloquear(true); iniciarReloj('estadoRetirar','Retirando'); google.script.run.withSuccessHandler(res=>{bloquear(false); detenerReloj(); setEstado('estadoRetirar',res.message||'Alumno retirado.'); verAulas(true);}).withFailureHandler(error=>{bloquear(false); detenerReloj(); setEstado('estadoRetirar',error.message||error);}).panelRetirarAlumnoDeSeccion(seleccionado.email,nivel,seccion,incluir);
 }
 
-function prepararMovimiento(){
-  if(!seleccionado) return;
-  const nivel=document.getElementById('nivel').value;
-  const origen=document.getElementById('origen').value;
-  const destino=document.getElementById('destino').value;
-  const estado=document.getElementById('estadoMover');
-  estado.textContent='Preparando fila...';
-
-  google.script.run
-    .withSuccessHandler(res=>{estado.textContent=res&&res.message?res.message:'Movimiento preparado.';})
-    .withFailureHandler(error=>{estado.textContent=error.message||error;})
-    .panelPrepararMoverAlumno(seleccionado.email,nivel,origen,destino);
-}
-
-function copiarCorreo(){
-  if(!seleccionado) return;
-  navigator.clipboard.writeText(seleccionado.email||'');
-  document.getElementById('estadoBusqueda').textContent='Correo copiado: '+seleccionado.email;
-}
-
-function esc(value){
-  return String(value||'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-}
+function bloquear(v){ ['btnAgregar','btnMover','btnRetirar','btnAulas'].forEach(id=>$(id).disabled=v||!seleccionado); }
+function iniciarReloj(id,texto){ detenerReloj(); accionActual=id; inicioReloj=Date.now(); setEstado(id,texto+'... 0 s'); reloj=setInterval(()=>setEstado(id,texto+'... '+Math.round((Date.now()-inicioReloj)/1000)+' s'),1000); }
+function detenerReloj(){ if(reloj) clearInterval(reloj); reloj=null; }
+function copiarCorreo(){ if(!seleccionado) return; navigator.clipboard.writeText(seleccionado.email||''); setEstado('estadoBusqueda','Correo copiado: '+seleccionado.email); }
+function setEstado(id,texto){ $(id).textContent=texto||''; }
+function $(id){ return document.getElementById(id); }
+function esc(value){ return String(value||'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 </script>
 </body>
 </html>
