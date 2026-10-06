@@ -1,0 +1,10 @@
+# Local clasp project binding. Do not commit the real Script ID.
+.clasp.json
+
+# Dependencies / local tooling
+node_modules/
+.DS_Store
+.env
+
+# clasp local auth/cache if ever generated in the repo
+.clasprc.json
