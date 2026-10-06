@@ -56,6 +56,22 @@
     <div id="aulas" class="courses" style="display:none"></div>
   </div>
 
+  <div class="section" id="bloqueAgregar">
+    <label>Agregar alumno a sección</label>
+    <select id="nivelAgregar" onchange="actualizarSeccionesAgregar()">
+      <option value="">Nivel</option>
+      <option value="E.B.P.">E.B.P.</option>
+      <option value="E.M.G.">E.M.G.</option>
+    </select>
+
+    <select id="seccionAgregar">
+      <option value="">Sección destino</option>
+    </select>
+
+    <button onclick="agregarAlumnoSeccion()" id="btnAgregar" disabled>Agregar ahora</button>
+    <div id="estadoAgregar" class="status">Selecciona un alumno para agregarlo a una sección.</div>
+  </div>
+
   <div class="section" id="bloqueMover">
     <label>Mover alumno</label>
     <select id="nivel" onchange="actualizarSecciones()">
@@ -80,7 +96,11 @@ let secciones=[];
 
 window.addEventListener('load',()=>{
   google.script.run
-    .withSuccessHandler(datos=>{secciones=datos||[]; actualizarSecciones();})
+    .withSuccessHandler(datos=>{
+      secciones=datos||[];
+      actualizarSecciones();
+      actualizarSeccionesAgregar();
+    })
     .withFailureHandler(error=>{document.getElementById('estadoMover').textContent=error.message||error;})
     .panelObtenerSecciones();
 });
@@ -141,6 +161,7 @@ function seleccionarUsuario(usuario,elemento){
   seleccionado=usuario;
   document.querySelectorAll('.card').forEach(card=>card.classList.remove('selected'));
   elemento.classList.add('selected');
+  document.getElementById('estadoAgregar').textContent='Seleccionado: '+usuario.email;
   document.getElementById('estadoMover').textContent='Seleccionado: '+usuario.email;
   actualizarBotones();
   limpiarAulas();
@@ -148,10 +169,13 @@ function seleccionarUsuario(usuario,elemento){
 
 function actualizarBotones(){
   const hay=!!(seleccionado&&seleccionado.email);
+  const esAlumno=document.getElementById('tipo').value==='Alumno';
   document.getElementById('btnAulas').disabled=!hay;
   document.getElementById('btnCopiar').disabled=!hay;
-  document.getElementById('btnMover').disabled=!hay || document.getElementById('tipo').value!=='Alumno';
-  document.getElementById('bloqueMover').style.display=document.getElementById('tipo').value==='Alumno'?'block':'none';
+  document.getElementById('btnAgregar').disabled=!hay || !esAlumno;
+  document.getElementById('btnMover').disabled=!hay || !esAlumno;
+  document.getElementById('bloqueAgregar').style.display=esAlumno?'block':'none';
+  document.getElementById('bloqueMover').style.display=esAlumno?'block':'none';
 }
 
 function limpiarAulas(){
@@ -188,6 +212,53 @@ function verAulas(){
     })
     .withFailureHandler(error=>{estado.textContent=error.message||error;})
     .panelListarAulasUsuario(seleccionado.email,document.getElementById('tipo').value);
+}
+
+function actualizarSeccionesAgregar(){
+  const nivel=document.getElementById('nivelAgregar').value;
+  const destino=document.getElementById('seccionAgregar');
+  destino.innerHTML='<option value="">Sección destino</option>';
+
+  secciones
+    .filter(s=>!nivel||s.nivel===nivel)
+    .forEach(s=>{
+      const opt=document.createElement('option');
+      opt.value=s.nomenclatura;
+      opt.textContent=s.nomenclatura;
+      destino.appendChild(opt);
+    });
+}
+
+function agregarAlumnoSeccion(){
+  if(!seleccionado) return;
+  const nivel=document.getElementById('nivelAgregar').value;
+  const seccion=document.getElementById('seccionAgregar').value;
+  const estado=document.getElementById('estadoAgregar');
+
+  if(!nivel||!seccion){
+    estado.textContent='Selecciona nivel y sección destino.';
+    return;
+  }
+
+  const confirmar=window.confirm('Se agregará '+seleccionado.email+' a las aulas de '+seccion+'. ¿Continuar?');
+  if(!confirmar){
+    estado.textContent='No se realizó ningún cambio.';
+    return;
+  }
+
+  estado.textContent='Agregando alumno...';
+  document.getElementById('btnAgregar').disabled=true;
+
+  google.script.run
+    .withSuccessHandler(res=>{
+      actualizarBotones();
+      estado.textContent=res&&res.message?res.message:'Alumno agregado.';
+    })
+    .withFailureHandler(error=>{
+      actualizarBotones();
+      estado.textContent=error.message||error;
+    })
+    .panelAgregarAlumnoASeccion(seleccionado.email,nivel,seccion);
 }
 
 function actualizarSecciones(){
@@ -249,7 +320,7 @@ function copiarCorreo(){
 }
 
 function esc(value){
-  return String(value||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  return String(value||'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 }
 </script>
 </body>
