@@ -2,215 +2,346 @@
 <html>
 <head>
   <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <style>
-    :root{--red:#b71c1c;--border:#dedede;--muted:#666;--bg:#f7f7f7;--soft:#fff3f3}
+    :root{
+      --red:#b71c1c;--red2:#8f1414;--ink:#202124;--muted:#6b7280;--line:#e5e7eb;--bg:#f6f7f9;--card:#fff;--soft:#fff4f4;--ok:#137333;--warn:#9a5b00;
+      --radius:16px;--shadow:0 6px 22px rgba(0,0,0,.08)
+    }
     *{box-sizing:border-box}
-    body{font-family:Arial,sans-serif;margin:0;padding:12px;background:#fff;color:#222;font-size:13px}
-    h2{font-size:16px;margin:0 0 12px}
-    label{display:block;font-weight:bold;margin:12px 0 5px}
-    input,select,button{width:100%;font-size:14px;border-radius:8px;padding:10px}
-    input,select{border:1px solid var(--border);background:#fff}
-    button{border:0;background:var(--red);color:white;font-weight:bold;cursor:pointer;margin-top:8px}
-    button.secondary{background:#333}.ghost{background:#eee;color:#222}.danger{background:#7f1111}
-    button:disabled{opacity:.55;cursor:default}.row{display:flex;gap:8px}.row>*{flex:1}
-    .status{margin:8px 0;color:var(--muted);font-size:12px;line-height:1.35}
-    .card{border:1px solid var(--border);border-radius:10px;padding:10px;margin:8px 0;background:#fff;cursor:pointer}
-    .card.selected{border-color:var(--red);background:var(--soft)}
-    .name{font-weight:bold;margin-bottom:3px}.email{font-size:12px;color:#333;word-break:break-all}.ou,.meta{font-size:11px;color:var(--muted);margin-top:3px}
-    .badge{display:inline-block;font-size:10px;border-radius:999px;padding:2px 6px;background:#eee;margin-top:5px}
-    .section{border-top:1px solid #eee;margin-top:14px;padding-top:12px}
-    .courses{max-height:220px;overflow:auto;background:var(--bg);border-radius:8px;padding:6px;margin-top:8px}
-    .course{padding:7px;border-bottom:1px solid #e5e5e5}.course:last-child{border-bottom:0}
-    .course-title{font-weight:bold;font-size:12px}.course-meta{font-size:11px;color:var(--muted);margin-top:2px}
-    .empty{color:var(--muted);font-size:12px;padding:8px}.check{display:flex;align-items:center;gap:8px;margin-top:8px}.check input{width:auto}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Roboto,sans-serif;font-size:14px}
+    body{padding-bottom:78px}
+    .app{max-width:560px;margin:0 auto;min-height:100vh;background:var(--bg)}
+    .top{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--red),#5f0d0d);color:white;padding:14px 14px 12px;box-shadow:0 4px 14px rgba(0,0,0,.16)}
+    .top h1{font-size:17px;margin:0 0 3px;letter-spacing:.1px}.top p{margin:0;font-size:12px;opacity:.9}
+    .content{padding:12px}.view{display:none}.view.active{display:block}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin-bottom:12px}
+    .flat{box-shadow:none}.title{font-size:15px;font-weight:700;margin:0 0 9px}.small{font-size:12px;color:var(--muted);line-height:1.35}.status{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.35;min-height:16px}
+    label{display:block;font-size:12px;font-weight:700;margin:10px 0 5px;color:#374151}
+    input,select,button{width:100%;font-size:15px;border-radius:12px;padding:12px}
+    input,select{border:1px solid #d8dce2;background:white;color:var(--ink)}
+    input:focus,select:focus{outline:2px solid rgba(183,28,28,.18);border-color:var(--red)}
+    button{border:0;background:var(--red);color:white;font-weight:700;cursor:pointer;margin-top:8px;min-height:46px}
+    button.secondary{background:#2f3540}.ghost{background:#eef0f3;color:#202124}.danger{background:#7f1111}.softbtn{background:#fff;color:var(--red);border:1px solid #f1b8b8}
+    button:disabled{opacity:.55;cursor:default}.row{display:flex;gap:8px}.row>*{flex:1}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .segment{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(255,255,255,.18);border-radius:14px;padding:4px;margin-top:10px}
+    .segment button{margin:0;background:transparent;color:white;min-height:40px;padding:8px;border-radius:11px}.segment button.active{background:white;color:var(--red)}
+    .selected{display:flex;align-items:center;gap:10px}.avatar{width:42px;height:42px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 auto}.sel-info{min-width:0}.sel-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sel-email{font-size:12px;color:var(--muted);word-break:break-all}.empty-user{color:var(--muted);font-size:13px;padding:6px 0}
+    .result{border:1px solid var(--line);border-radius:14px;padding:11px;background:white;margin:8px 0;cursor:pointer}.result:active{transform:scale(.99)}.result.selected{border-color:var(--red);background:var(--soft)}
+    .name{font-weight:800;margin-bottom:3px}.email{font-size:12px;color:#333;word-break:break-all}.ou,.meta{font-size:11px;color:var(--muted);margin-top:3px}.badge{display:inline-block;font-size:10px;border-radius:999px;padding:3px 7px;background:#eef0f3;margin:6px 5px 0 0}.badge.warn{background:#fff4d6;color:#7a4a00}
+    .action-card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:12px;margin:10px 0}.action-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:6px}.action-head b{font-size:14px}.pill{font-size:11px;border-radius:999px;background:#f1f2f4;color:#374151;padding:4px 8px;white-space:nowrap}
+    .check{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:#374151}.check input{width:auto;margin:0;transform:scale(1.15)}
+    .courses{background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden}.course{padding:10px;border-bottom:1px solid #eef0f3}.course:last-child{border-bottom:0}.course-title{font-weight:800;font-size:13px}.course-meta{font-size:11px;color:var(--muted);margin-top:3px}.none{padding:16px;color:var(--muted);font-size:13px;text-align:center}
+    .bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;background:white;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.09)}
+    .bottom button{margin:0;background:white;color:#4b5563;min-height:48px;padding:6px;border-radius:12px;font-size:12px}.bottom button.active{background:var(--soft);color:var(--red)}.bottom .ico{display:block;font-size:18px;line-height:18px;margin-bottom:2px}
+    @media (min-width:760px){body{padding-bottom:0}.bottom{position:sticky}.content{padding:14px}.top{border-radius:0 0 18px 18px}.grid-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid-actions .action-card{margin:0}}
   </style>
 </head>
 <body>
-  <h2>Panel operativo</h2>
-
-  <label>Tipo</label>
-  <select id="tipo" onchange="cambiarTipo()">
-    <option value="Alumno">Alumno</option>
-    <option value="Profesor">Profesor</option>
-  </select>
-
-  <label>Buscar usuario</label>
-  <input id="busqueda" placeholder="Nombre, apellido, correo u OU" autocomplete="off" oninput="programarBusqueda()">
-  <div id="estadoBusqueda" class="status">Cargando usuarios locales...</div>
-  <div id="resultados"></div>
-
-  <div class="section">
-    <div class="row">
-      <button class="secondary" onclick="verAulas(false)" id="btnAulas" disabled>Ver aulas activas</button>
-      <button class="ghost" onclick="copiarCorreo()" id="btnCopiar" disabled>Copiar correo</button>
+<div class="app">
+  <div class="top">
+    <h1>Panel operativo</h1>
+    <p id="subtitulo">Classroom LL. RR.</p>
+    <div class="segment">
+      <button id="segAlumno" class="active" onclick="setTipo('Alumno')">Alumno</button>
+      <button id="segProfesor" onclick="setTipo('Profesor')">Profesor</button>
     </div>
-    <div id="estadoAulas" class="status"></div>
-    <div id="aulas" class="courses" style="display:none"></div>
   </div>
 
-  <div class="section" id="bloqueAgregar">
-    <label>Agregar alumno a sección</label>
-    <select id="nivelAgregar" onchange="actualizarSeccionesAgregar()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
-    <select id="seccionAgregar"><option value="">Sección destino</option></select>
-    <button onclick="agregarAlumnoSeccion()" id="btnAgregar" disabled>Agregar ahora</button>
-    <div id="estadoAgregar" class="status">Selecciona un alumno para agregarlo a una sección.</div>
-  </div>
+  <div class="content">
+    <section id="viewBuscar" class="view active">
+      <div class="card flat">
+        <div class="title">Buscar usuario</div>
+        <input id="busqueda" placeholder="Nombre, apellido, correo u OU" autocomplete="off" oninput="programarBusqueda()">
+        <div id="estadoBusqueda" class="status">Cargando usuarios...</div>
+      </div>
+      <div id="resultados"></div>
+    </section>
 
-  <div class="section" id="bloqueMover">
-    <label>Mover alumno</label>
-    <select id="nivel" onchange="actualizarSecciones()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
-    <div class="row">
-      <select id="origen" onchange="actualizarDestinos()"><option value="">Origen</option></select>
-      <select id="destino"><option value="">Destino</option></select>
-    </div>
-    <button onclick="moverAlumnoSeccion()" id="btnMover" disabled>Mover ahora</button>
-    <div id="estadoMover" class="status">Al ver aulas activas, el origen se completa automáticamente si el catálogo lo permite.</div>
-  </div>
+    <section id="viewAcciones" class="view">
+      <div class="card">
+        <div class="selected" id="resumenUsuario"><div class="empty-user">Selecciona un usuario para continuar.</div></div>
+        <div class="row" style="margin-top:10px">
+          <button class="secondary" onclick="verAulas(false)" id="btnAulas" disabled>Ver aulas</button>
+          <button class="ghost" onclick="copiarCorreo()" id="btnCopiar" disabled>Copiar correo</button>
+        </div>
+      </div>
 
-  <div class="section" id="bloqueRetirar">
-    <label>Retirar alumno de aulas</label>
-    <select id="nivelRetirar" onchange="actualizarSeccionesRetirar()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
-    <select id="seccionRetirar"><option value="">Sección</option></select>
-    <label class="check"><input type="checkbox" id="incluirGenerales" checked> Incluir aulas generales del año</label>
-    <button class="danger" onclick="retirarAlumnoSeccion()" id="btnRetirar" disabled>Retirar ahora</button>
-    <div id="estadoRetirar" class="status">Retira al alumno de todas las aulas de la sección seleccionada.</div>
+      <div id="accionesAlumno">
+        <div class="action-card">
+          <div class="action-head"><b>Cambio de sección</b><span class="pill">uso frecuente</span></div>
+          <div class="small">Retira del bloque actual y reconstruye la inscripción en el bloque destino.</div>
+          <select id="nivel" onchange="actualizarSecciones()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
+          <div class="row">
+            <select id="origen" onchange="actualizarDestinos()"><option value="">Origen</option></select>
+            <select id="destino"><option value="">Destino</option></select>
+          </div>
+          <button onclick="moverAlumnoSeccion()" id="btnMover" disabled>Mover ahora</button>
+          <div id="estadoMover" class="status"></div>
+        </div>
+
+        <div class="grid-actions">
+          <div class="action-card">
+            <div class="action-head"><b>Agregar alumno</b><span class="pill">sección completa</span></div>
+            <select id="nivelAgregar" onchange="actualizarSeccionesAgregar()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
+            <select id="seccionAgregar"><option value="">Sección destino</option></select>
+            <button onclick="agregarAlumnoSeccion()" id="btnAgregar" disabled>Agregar ahora</button>
+            <div id="estadoAgregar" class="status"></div>
+          </div>
+
+          <div class="action-card">
+            <div class="action-head"><b>Retirar alumno</b><span class="pill">sección completa</span></div>
+            <select id="nivelRetirar" onchange="actualizarSeccionesRetirar()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
+            <select id="seccionRetirar"><option value="">Sección</option></select>
+            <label class="check"><input type="checkbox" id="incluirGenerales" checked> Incluir aulas generales</label>
+            <button class="danger" onclick="retirarAlumnoSeccion()" id="btnRetirar" disabled>Retirar ahora</button>
+            <div id="estadoRetirar" class="status"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="accionesProfesor" style="display:none">
+        <div class="grid-actions">
+          <div class="action-card">
+            <div class="action-head"><b>Agregar profesor</b><span class="pill">a sección</span></div>
+            <select id="nivelProfesorAgregar" onchange="actualizarSeccionesProfesorAgregar()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
+            <select id="seccionProfesorAgregar"><option value="">Sección</option></select>
+            <label class="check"><input type="checkbox" id="profAgregarGenerales" checked> Incluir aulas generales</label>
+            <button onclick="agregarProfesorSeccion()" id="btnProfesorAgregar" disabled>Agregar profesor</button>
+            <div id="estadoProfesorAgregar" class="status"></div>
+          </div>
+
+          <div class="action-card">
+            <div class="action-head"><b>Retirar profesor</b><span class="pill">de sección</span></div>
+            <select id="nivelProfesorRetirar" onchange="actualizarSeccionesProfesorRetirar()"><option value="">Nivel</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
+            <select id="seccionProfesorRetirar"><option value="">Sección</option></select>
+            <label class="check"><input type="checkbox" id="profRetirarGenerales" checked> Incluir aulas generales</label>
+            <button class="danger" onclick="retirarProfesorSeccion()" id="btnProfesorRetirar" disabled>Retirar profesor</button>
+            <div id="estadoProfesorRetirar" class="status"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="viewAulas" class="view">
+      <div class="card">
+        <div class="title">Aulas activas</div>
+        <div id="estadoAulas" class="status">Selecciona un usuario.</div>
+      </div>
+      <div id="aulas" class="courses"><div class="none">Sin datos cargados.</div></div>
+    </section>
   </div>
+</div>
+
+<nav class="bottom">
+  <button id="navBuscar" class="active" onclick="mostrarVista('Buscar')"><span class="ico">⌕</span>Buscar</button>
+  <button id="navAcciones" onclick="mostrarVista('Acciones')"><span class="ico">✓</span>Acciones</button>
+  <button id="navAulas" onclick="mostrarVista('Aulas')"><span class="ico">▦</span>Aulas</button>
+</nav>
 
 <script>
-let timer=null, seleccionado=null, secciones=[], reloj=null, inicioReloj=0;
-let usuariosCache=[], cacheUsuariosCargado=false;
+let tipo='Alumno', seleccionado=null, secciones=[], usuariosCache=[], aulasActuales=[], timer=null, reloj=null, inicioReloj=0;
 
 window.addEventListener('load',()=>{
-  google.script.run.withSuccessHandler(datos=>{secciones=datos||[]; actualizarTodasLasSecciones();})
-    .withFailureHandler(error=>setEstado('estadoMover',error.message||error)).panelObtenerSecciones();
-
-  google.script.run.withSuccessHandler(res=>{
-    usuariosCache=(res&&res.usuarios)?res.usuarios:(Array.isArray(res)?res:[]);
-    cacheUsuariosCargado=true;
-    setEstado('estadoBusqueda','Lista local cargada: '+usuariosCache.length+' usuarios.');
-    if($('busqueda').value.trim().length>=2) buscar();
-  }).withFailureHandler(error=>{
-    cacheUsuariosCargado=true;
-    setEstado('estadoBusqueda','No se pudo cargar la lista local: '+(error.message||error));
-  }).panelObtenerUsuariosCache();
+  cargarDatosIniciales();
+  $('busqueda').focus();
 });
 
-function programarBusqueda(){ clearTimeout(timer); timer=setTimeout(buscar,80); }
-function cambiarTipo(){ limpiarAulas(); actualizarBotones(); }
+function cargarDatosIniciales(){
+  google.script.run.withSuccessHandler(datos=>{
+    secciones=datos||[]; actualizarTodasLasSecciones();
+  }).withFailureHandler(error=>setEstado('estadoBusqueda',error.message||error)).panelObtenerSecciones();
+
+  google.script.run.withSuccessHandler(res=>{
+    usuariosCache=(res&&res.usuarios)||[];
+    setEstado('estadoBusqueda',usuariosCache.length?usuariosCache.length+' usuarios cargados.':'No hay usuarios cargados. Ejecuta Actualizar lista de usuarios.');
+    buscar();
+  }).withFailureHandler(error=>setEstado('estadoBusqueda',error.message||error)).panelObtenerUsuariosCache();
+}
+
+function setTipo(nuevo){
+  tipo=nuevo;
+  $('segAlumno').classList.toggle('active',tipo==='Alumno');
+  $('segProfesor').classList.toggle('active',tipo==='Profesor');
+  $('accionesAlumno').style.display=tipo==='Alumno'?'block':'none';
+  $('accionesProfesor').style.display=tipo==='Profesor'?'block':'none';
+  actualizarBotones();
+  if(seleccionado) verAulas(true);
+}
+
+function mostrarVista(nombre){
+  ['Buscar','Acciones','Aulas'].forEach(v=>{
+    $('view'+v).classList.toggle('active',v===nombre);
+    $('nav'+v).classList.toggle('active',v===nombre);
+  });
+}
+
+function programarBusqueda(){ clearTimeout(timer); timer=setTimeout(buscar,120); }
 
 function buscar(){
-  const texto=$('busqueda').value.trim(); seleccionado=null; actualizarBotones(); limpiarAulas(); $('resultados').innerHTML='';
-  if(texto.length<2){setEstado('estadoBusqueda',cacheUsuariosCargado?'Escribe al menos 2 caracteres.':'Cargando usuarios locales...'); return;}
-  if(!cacheUsuariosCargado){setEstado('estadoBusqueda','Cargando usuarios locales...'); return;}
+  const texto=$('busqueda').value.trim();
+  const cont=$('resultados'); cont.innerHTML='';
+  if(!texto){ setEstado('estadoBusqueda',usuariosCache.length?usuariosCache.length+' usuarios cargados.':'Escribe para buscar.'); return; }
+  if(texto.length<2){ setEstado('estadoBusqueda','Escribe al menos 2 caracteres.'); return; }
 
-  const usuarios=buscarEnCache(texto);
-  if(usuarios.length || !esCorreo(texto)){
-    setEstado('estadoBusqueda',usuarios.length?usuarios.length+' resultado(s).':'Sin resultados en la lista local.');
-    renderUsuarios(usuarios);
+  const resultados=filtrarUsuariosLocal(texto,30);
+  if(resultados.length){
+    setEstado('estadoBusqueda',resultados.length+' resultado(s).');
+    renderUsuarios(resultados);
     return;
   }
 
-  iniciarReloj('estadoBusqueda','Buscando correo en Admin');
-  google.script.run.withSuccessHandler(datos=>{
-    detenerReloj(); const encontrados=datos||[];
-    setEstado('estadoBusqueda',encontrados.length?encontrados.length+' resultado(s).':'Sin resultados.');
-    renderUsuarios(encontrados);
-  }).withFailureHandler(error=>{
-    detenerReloj(); setEstado('estadoBusqueda',error.message||error);
-  }).panelBuscarUsuarios(texto);
+  if(esCorreo(texto)){
+    iniciarReloj('estadoBusqueda','Buscando correo');
+    google.script.run.withSuccessHandler(usuarios=>{
+      detenerReloj(); usuarios=usuarios||[];
+      setEstado('estadoBusqueda',usuarios.length?usuarios.length+' resultado(s).':'Sin resultados.'); renderUsuarios(usuarios);
+    }).withFailureHandler(error=>{detenerReloj(); setEstado('estadoBusqueda',error.message||error);}).panelBuscarUsuarios(texto);
+    return;
+  }
+
+  setEstado('estadoBusqueda','Sin resultados en la lista local.');
 }
 
-function buscarEnCache(texto){
-  const terms=normalizarTexto(texto).split(' ').filter(Boolean);
-  const out=[];
-  for(const usuario of usuariosCache){
-    if(out.length>=30) break;
-    const haystack=normalizarTexto((usuario.fullName||'')+' '+(usuario.givenName||'')+' '+(usuario.familyName||'')+' '+(usuario.email||'')+' '+(usuario.orgUnitPath||''));
-    if(terms.every(term=>haystack.includes(term))) out.push(usuario);
-  }
+function filtrarUsuariosLocal(texto,limite){
+  const terms=normalizar(texto).split(' ').filter(Boolean), out=[];
+  usuariosCache.forEach(u=>{
+    if(out.length>=limite) return;
+    const hay=normalizar((u.fullName||'')+' '+(u.givenName||'')+' '+(u.familyName||'')+' '+(u.email||'')+' '+(u.orgUnitPath||''));
+    if(terms.every(t=>hay.includes(t))) out.push(u);
+  });
   return out;
 }
 
 function renderUsuarios(usuarios){
   const cont=$('resultados'); cont.innerHTML='';
   usuarios.forEach(usuario=>{
-    const div=document.createElement('div'); div.className='card'; div.onclick=()=>seleccionarUsuario(usuario,div);
-    div.innerHTML=`<div class="name">${esc(usuario.fullName||'(Sin nombre)')}</div><div class="email">${esc(usuario.email||'')}</div><div class="ou">${esc(usuario.orgUnitPath||'')}</div>${usuario.source?`<span class="badge">${esc(usuario.source)}</span>`:''}${(usuario.suspended||usuario.archived)?'<span class="badge">Suspendido/archivado</span>':''}`;
+    const div=document.createElement('div'); div.className='result'; div.onclick=()=>seleccionarUsuario(usuario,div);
+    div.innerHTML=`<div class="name">${esc(usuario.fullName||'(Sin nombre)')}</div><div class="email">${esc(usuario.email||'')}</div><div class="ou">${esc(usuario.orgUnitPath||'')}</div>${usuario.source?`<span class="badge">${esc(usuario.source)}</span>`:''}${(usuario.suspended||usuario.archived)?'<span class="badge warn">Suspendido/archivado</span>':''}`;
     cont.appendChild(div);
   });
 }
 
 function seleccionarUsuario(usuario,elemento){
-  seleccionado=usuario; document.querySelectorAll('.card').forEach(card=>card.classList.remove('selected')); elemento.classList.add('selected');
-  setEstado('estadoAgregar','Seleccionado: '+usuario.email); setEstado('estadoMover','Seleccionado: '+usuario.email); setEstado('estadoRetirar','Seleccionado: '+usuario.email);
-  actualizarBotones(); verAulas(true);
+  seleccionado=usuario;
+  document.querySelectorAll('.result').forEach(card=>card.classList.remove('selected'));
+  if(elemento) elemento.classList.add('selected');
+  actualizarResumenUsuario(); actualizarBotones(); mostrarVista('Acciones'); verAulas(true);
+}
+
+function actualizarResumenUsuario(){
+  const cont=$('resumenUsuario');
+  if(!seleccionado){ cont.innerHTML='<div class="empty-user">Selecciona un usuario para continuar.</div>'; return; }
+  const iniciales=(seleccionado.fullName||seleccionado.email||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+  cont.innerHTML=`<div class="avatar">${esc(iniciales||'?')}</div><div class="sel-info"><div class="sel-name">${esc(seleccionado.fullName||'(Sin nombre)')}</div><div class="sel-email">${esc(seleccionado.email||'')}</div><div class="ou">${esc(seleccionado.orgUnitPath||'')}</div></div>`;
 }
 
 function actualizarBotones(){
-  const hay=!!(seleccionado&&seleccionado.email), esAlumno=$('tipo').value==='Alumno';
-  $('btnAulas').disabled=!hay; $('btnCopiar').disabled=!hay; $('btnAgregar').disabled=!hay||!esAlumno; $('btnMover').disabled=!hay||!esAlumno; $('btnRetirar').disabled=!hay||!esAlumno;
-  $('bloqueAgregar').style.display=esAlumno?'block':'none'; $('bloqueMover').style.display=esAlumno?'block':'none'; $('bloqueRetirar').style.display=esAlumno?'block':'none';
+  const hay=!!(seleccionado&&seleccionado.email), esAlumno=tipo==='Alumno';
+  ['btnAulas','btnCopiar'].forEach(id=>$(id).disabled=!hay);
+  ['btnAgregar','btnMover','btnRetirar'].forEach(id=>$(id).disabled=!hay||!esAlumno);
+  ['btnProfesorAgregar','btnProfesorRetirar'].forEach(id=>$(id).disabled=!hay||esAlumno);
 }
-
-function limpiarAulas(){ $('aulas').style.display='none'; $('aulas').innerHTML=''; setEstado('estadoAulas',''); }
 
 function verAulas(silencioso){
   if(!seleccionado) return;
-  iniciarReloj('estadoAulas','Consultando Classroom'); $('aulas').style.display='none'; $('aulas').innerHTML='';
+  iniciarReloj('estadoAulas','Consultando');
   google.script.run.withSuccessHandler(res=>{
-    detenerReloj(); const aulas=Array.isArray(res)?res:(res.aulas||[]); const deteccion=Array.isArray(res)?null:res.deteccion;
-    setEstado('estadoAulas',aulas.length+' aula(s) activa(s).'+(deteccion?' Origen detectado: '+deteccion.nomenclatura+'.':'')); renderAulas(aulas); if(deteccion) aplicarDeteccion(deteccion);
-  }).withFailureHandler(error=>{detenerReloj(); setEstado('estadoAulas',error.message||error);}).panelListarAulasUsuario(seleccionado.email,$('tipo').value);
+    detenerReloj();
+    aulasActuales=Array.isArray(res)?res:(res.aulas||[]);
+    const deteccion=Array.isArray(res)?null:res.deteccion;
+    setEstado('estadoAulas',aulasActuales.length+' aula(s) activa(s).'+(deteccion?' Origen detectado: '+deteccion.nomenclatura+'.':''));
+    renderAulas(aulasActuales);
+    if(deteccion) aplicarDeteccion(deteccion);
+  }).withFailureHandler(error=>{detenerReloj(); setEstado('estadoAulas',error.message||error);}).panelListarAulasUsuario(seleccionado.email,tipo);
 }
 
 function renderAulas(aulas){
-  const cont=$('aulas'); cont.style.display='block'; cont.innerHTML='';
-  if(!aulas.length){cont.innerHTML='<div class="empty">Sin aulas activas.</div>'; return;}
-  aulas.forEach(a=>{const div=document.createElement('div'); div.className='course'; div.innerHTML=`<div class="course-title">${esc(a.name||'')}</div><div class="course-meta">${esc(a.nomenclatura||a.section||'Sin sección')} · ${esc(a.id||'')}</div>`; cont.appendChild(div);});
+  const cont=$('aulas'); cont.innerHTML='';
+  if(!aulas.length){cont.innerHTML='<div class="none">Sin aulas activas.</div>'; return;}
+  aulas.forEach(a=>{
+    const div=document.createElement('div'); div.className='course';
+    div.innerHTML=`<div class="course-title">${esc(a.name||'')}</div><div class="course-meta">${esc(a.nomenclatura||a.section||'Sin sección')} · ${esc(a.id||'')}</div>`;
+    cont.appendChild(div);
+  });
 }
 
 function aplicarDeteccion(d){
-  $('nivel').value=d.nivel; actualizarSecciones(); $('origen').value=d.nomenclatura; actualizarDestinos();
-  $('nivelRetirar').value=d.nivel; actualizarSeccionesRetirar(); $('seccionRetirar').value=d.nomenclatura;
+  setSelect('nivel',d.nivel); actualizarSecciones(); setSelect('origen',d.nomenclatura); actualizarDestinos();
+  setSelect('nivelRetirar',d.nivel); actualizarSeccionesRetirar(); setSelect('seccionRetirar',d.nomenclatura);
+  setSelect('nivelProfesorRetirar',d.nivel); actualizarSeccionesProfesorRetirar(); setSelect('seccionProfesorRetirar',d.nomenclatura);
+  setSelect('nivelProfesorAgregar',d.nivel); actualizarSeccionesProfesorAgregar();
 }
 
-function actualizarTodasLasSecciones(){ actualizarSecciones(); actualizarSeccionesAgregar(); actualizarSeccionesRetirar(); }
-function llenarSelect(id, nivel, placeholder){ const s=$(id); s.innerHTML='<option value="">'+placeholder+'</option>'; secciones.filter(x=>!nivel||x.nivel===nivel).forEach(x=>{const o=document.createElement('option'); o.value=x.nomenclatura; o.textContent=x.nomenclatura; s.appendChild(o);}); }
+function actualizarTodasLasSecciones(){ actualizarSecciones(); actualizarSeccionesAgregar(); actualizarSeccionesRetirar(); actualizarSeccionesProfesorAgregar(); actualizarSeccionesProfesorRetirar(); }
+function llenarSelect(id,nivel,placeholder){
+  const s=$(id), actual=s.value; s.innerHTML='<option value="">'+placeholder+'</option>';
+  secciones.filter(x=>!nivel||x.nivel===nivel).forEach(x=>{const o=document.createElement('option'); o.value=x.nomenclatura; o.textContent=x.nomenclatura; s.appendChild(o);});
+  if(actual) s.value=actual;
+}
 function actualizarSeccionesAgregar(){ llenarSelect('seccionAgregar',$('nivelAgregar').value,'Sección destino'); }
 function actualizarSeccionesRetirar(){ llenarSelect('seccionRetirar',$('nivelRetirar').value,'Sección'); }
+function actualizarSeccionesProfesorAgregar(){ llenarSelect('seccionProfesorAgregar',$('nivelProfesorAgregar').value,'Sección'); }
+function actualizarSeccionesProfesorRetirar(){ llenarSelect('seccionProfesorRetirar',$('nivelProfesorRetirar').value,'Sección'); }
 function actualizarSecciones(){ llenarSelect('origen',$('nivel').value,'Origen'); actualizarDestinos(); }
 function actualizarDestinos(){
-  const nivel=$('nivel').value, origen=$('origen').value, destino=$('destino'); destino.innerHTML='<option value="">Destino</option>'; if(!origen) return; const prefijo=origen.substring(0,3);
+  const nivel=$('nivel').value, origen=$('origen').value, destino=$('destino'), actual=destino.value;
+  destino.innerHTML='<option value="">Destino</option>'; if(!origen) return; const prefijo=origen.substring(0,3);
   secciones.filter(s=>s.nivel===nivel&&s.prefijo===prefijo&&s.nomenclatura!==origen).forEach(s=>{const o=document.createElement('option'); o.value=s.nomenclatura; o.textContent=s.nomenclatura; destino.appendChild(o);});
+  if(actual) destino.value=actual;
 }
 
 function agregarAlumnoSeccion(){
-  if(!seleccionado) return; const nivel=$('nivelAgregar').value, seccion=$('seccionAgregar').value; if(!nivel||!seccion){setEstado('estadoAgregar','Selecciona nivel y sección destino.'); return;}
-  if(!confirm('Se agregará '+seleccionado.email+' a las aulas de '+seccion+'. ¿Continuar?')) return;
-  bloquear(true); iniciarReloj('estadoAgregar','Agregando'); google.script.run.withSuccessHandler(res=>{bloquear(false); detenerReloj(); setEstado('estadoAgregar',res.message||'Alumno agregado.'); verAulas(true);}).withFailureHandler(error=>{bloquear(false); detenerReloj(); setEstado('estadoAgregar',error.message||error);}).panelAgregarAlumnoASeccion(seleccionado.email,nivel,seccion);
+  if(!seleccionado) return; const nivel=$('nivelAgregar').value, seccion=$('seccionAgregar').value;
+  if(!nivel||!seccion){setEstado('estadoAgregar','Selecciona nivel y sección.'); return;}
+  if(!confirm('Agregar '+seleccionado.email+' a '+seccion+'.')) return;
+  bloquear(true); iniciarReloj('estadoAgregar','Agregando');
+  google.script.run.withSuccessHandler(res=>terminarAccion('estadoAgregar',res)).withFailureHandler(error=>fallarAccion('estadoAgregar',error)).panelAgregarAlumnoASeccion(seleccionado.email,nivel,seccion);
 }
 
 function moverAlumnoSeccion(){
-  if(!seleccionado) return; const nivel=$('nivel').value, origen=$('origen').value, destino=$('destino').value; if(!nivel||!origen||!destino){setEstado('estadoMover','Selecciona nivel, origen y destino.'); return;}
-  if(!confirm('Se moverá '+seleccionado.email+' de '+origen+' a '+destino+'. ¿Continuar?')) return;
-  bloquear(true); iniciarReloj('estadoMover','Moviendo'); google.script.run.withSuccessHandler(res=>{bloquear(false); detenerReloj(); setEstado('estadoMover',res.message||'Movimiento finalizado.'); verAulas(true);}).withFailureHandler(error=>{bloquear(false); detenerReloj(); setEstado('estadoMover',error.message||error);}).panelMoverAlumnoSeccion(seleccionado.email,nivel,origen,destino);
+  if(!seleccionado) return; const nivel=$('nivel').value, origen=$('origen').value, destino=$('destino').value;
+  if(!nivel||!origen||!destino){setEstado('estadoMover','Selecciona nivel, origen y destino.'); return;}
+  if(!confirm('Mover '+seleccionado.email+' de '+origen+' a '+destino+'.')) return;
+  bloquear(true); iniciarReloj('estadoMover','Moviendo');
+  google.script.run.withSuccessHandler(res=>terminarAccion('estadoMover',res)).withFailureHandler(error=>fallarAccion('estadoMover',error)).panelMoverAlumnoSeccion(seleccionado.email,nivel,origen,destino);
 }
 
 function retirarAlumnoSeccion(){
-  if(!seleccionado) return; const nivel=$('nivelRetirar').value, seccion=$('seccionRetirar').value, incluir=$('incluirGenerales').checked; if(!nivel||!seccion){setEstado('estadoRetirar','Selecciona nivel y sección.'); return;}
-  if(!confirm('Se retirará '+seleccionado.email+' de las aulas de '+seccion+(incluir?' incluyendo generales.':'.')+' ¿Continuar?')) return;
-  bloquear(true); iniciarReloj('estadoRetirar','Retirando'); google.script.run.withSuccessHandler(res=>{bloquear(false); detenerReloj(); setEstado('estadoRetirar',res.message||'Alumno retirado.'); verAulas(true);}).withFailureHandler(error=>{bloquear(false); detenerReloj(); setEstado('estadoRetirar',error.message||error);}).panelRetirarAlumnoDeSeccion(seleccionado.email,nivel,seccion,incluir);
+  if(!seleccionado) return; const nivel=$('nivelRetirar').value, seccion=$('seccionRetirar').value, incluir=$('incluirGenerales').checked;
+  if(!nivel||!seccion){setEstado('estadoRetirar','Selecciona nivel y sección.'); return;}
+  if(!confirm('Retirar '+seleccionado.email+' de '+seccion+(incluir?' incluyendo generales.':'.'))) return;
+  bloquear(true); iniciarReloj('estadoRetirar','Retirando');
+  google.script.run.withSuccessHandler(res=>terminarAccion('estadoRetirar',res)).withFailureHandler(error=>fallarAccion('estadoRetirar',error)).panelRetirarAlumnoDeSeccion(seleccionado.email,nivel,seccion,incluir);
 }
 
-function bloquear(v){ ['btnAgregar','btnMover','btnRetirar','btnAulas'].forEach(id=>$(id).disabled=v||!seleccionado); }
+function agregarProfesorSeccion(){
+  if(!seleccionado) return; const nivel=$('nivelProfesorAgregar').value, seccion=$('seccionProfesorAgregar').value, incluir=$('profAgregarGenerales').checked;
+  if(!nivel||!seccion){setEstado('estadoProfesorAgregar','Selecciona nivel y sección.'); return;}
+  if(!confirm('Agregar '+seleccionado.email+' como profesor en '+seccion+(incluir?' incluyendo generales.':'.'))) return;
+  bloquear(true); iniciarReloj('estadoProfesorAgregar','Agregando profesor');
+  google.script.run.withSuccessHandler(res=>terminarAccion('estadoProfesorAgregar',res)).withFailureHandler(error=>fallarAccion('estadoProfesorAgregar',error)).panelAgregarProfesorASeccion(seleccionado.email,nivel,seccion,incluir);
+}
+
+function retirarProfesorSeccion(){
+  if(!seleccionado) return; const nivel=$('nivelProfesorRetirar').value, seccion=$('seccionProfesorRetirar').value, incluir=$('profRetirarGenerales').checked;
+  if(!nivel||!seccion){setEstado('estadoProfesorRetirar','Selecciona nivel y sección.'); return;}
+  if(!confirm('Retirar '+seleccionado.email+' como profesor de '+seccion+(incluir?' incluyendo generales.':'.'))) return;
+  bloquear(true); iniciarReloj('estadoProfesorRetirar','Retirando profesor');
+  google.script.run.withSuccessHandler(res=>terminarAccion('estadoProfesorRetirar',res)).withFailureHandler(error=>fallarAccion('estadoProfesorRetirar',error)).panelRetirarProfesorDeSeccion(seleccionado.email,nivel,seccion,incluir);
+}
+
+function terminarAccion(id,res){ bloquear(false); detenerReloj(); setEstado(id,(res&&res.message)||'Operación finalizada.'); verAulas(true); }
+function fallarAccion(id,error){ bloquear(false); detenerReloj(); setEstado(id,error.message||error); }
+function bloquear(v){ ['btnAgregar','btnMover','btnRetirar','btnAulas','btnProfesorAgregar','btnProfesorRetirar'].forEach(id=>$(id).disabled=v||!seleccionado); if(!v) actualizarBotones(); }
 function iniciarReloj(id,texto){ detenerReloj(); inicioReloj=Date.now(); setEstado(id,texto+'... 0 s'); reloj=setInterval(()=>setEstado(id,texto+'... '+Math.round((Date.now()-inicioReloj)/1000)+' s'),1000); }
 function detenerReloj(){ if(reloj) clearInterval(reloj); reloj=null; }
 function copiarCorreo(){ if(!seleccionado) return; navigator.clipboard.writeText(seleccionado.email||''); setEstado('estadoBusqueda','Correo copiado: '+seleccionado.email); }
-function setEstado(id,texto){ $(id).textContent=texto||''; }
+function setSelect(id,value){ if($(id)) $(id).value=value||''; }
+function setEstado(id,texto){ if($(id)) $(id).textContent=texto||''; }
 function $(id){ return document.getElementById(id); }
-function normalizarTexto(value){return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');}
-function esCorreo(value){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value||'').trim());}
+function normalizar(value){ return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' '); }
+function esCorreo(value){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value||'').trim()); }
 function esc(value){ return String(value||'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 </script>
 </body>
