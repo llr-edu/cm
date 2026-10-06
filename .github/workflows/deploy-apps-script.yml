@@ -2,6 +2,12 @@ name: Deploy Apps Script
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - '.github/workflows/deploy-apps-script.yml'
 
 jobs:
   deploy:
