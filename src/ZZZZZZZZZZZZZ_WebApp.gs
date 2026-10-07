@@ -20,8 +20,16 @@ function doGet(e) {
     title = 'Panel operativo · Classroom LL. RR.';
   }
 
-  return HtmlService
-    .createHtmlOutputFromFile(file)
+  return renderPanelWeb_(file, title, panel || 'inicio');
+}
+
+function renderPanelWeb_(file, title, panel) {
+  const template = HtmlService.createTemplateFromFile(file);
+  template.appUrl = ScriptApp.getService().getUrl() || '';
+  template.panelActual = panel || '';
+
+  return template
+    .evaluate()
     .setTitle(title)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
@@ -38,7 +46,7 @@ function obtenerUrlPanelWeb(panel) {
     };
   }
 
-  if (!key) {
+  if (!key || key === 'inicio') {
     return {
       ok: true,
       url: base,
