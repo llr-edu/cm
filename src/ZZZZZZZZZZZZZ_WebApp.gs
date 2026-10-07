@@ -27,6 +27,32 @@ function doGet(e) {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
+function obtenerUrlPanelWeb(panel) {
+  const base = ScriptApp.getService().getUrl();
+  const key = String(panel || '').trim().toLowerCase();
+  if (!base) {
+    return {
+      ok: false,
+      url: '',
+      message: 'Todavía no hay despliegue web app activo.'
+    };
+  }
+
+  if (!key) {
+    return {
+      ok: true,
+      url: base,
+      message: 'URL de inicio disponible.'
+    };
+  }
+
+  return {
+    ok: true,
+    url: base + (base.indexOf('?') === -1 ? '?' : '&') + 'panel=' + encodeURIComponent(key),
+    message: 'URL disponible.'
+  };
+}
+
 function obtenerUrlAppMovil() {
   const url = ScriptApp.getService().getUrl();
   return {
