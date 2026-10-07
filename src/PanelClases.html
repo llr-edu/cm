@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    :root{--red:#b71c1c;--ink:#202124;--muted:#6b7280;--line:#e5e7eb;--bg:#f6f7f9;--card:#fff;--soft:#fff4f4;--radius:16px;--shadow:0 6px 22px rgba(0,0,0,.08)}
+    *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Roboto,sans-serif;font-size:14px}body{padding-bottom:20px}.app{max-width:720px;margin:0 auto;min-height:100vh}.top{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,var(--red),#5f0d0d);color:#fff;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,.16)}.top h1{font-size:18px;margin:0 0 3px}.top p{margin:0;font-size:12px;opacity:.9}.content{padding:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin-bottom:12px}.title{font-size:15px;font-weight:800;margin:0 0 9px}.small{font-size:12px;color:var(--muted);line-height:1.35}.status{font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;line-height:1.35}label{display:block;font-size:12px;font-weight:700;margin:9px 0 5px;color:#374151}input,select,textarea,button{width:100%;font-size:14px;border-radius:12px;padding:10px}input,select,textarea{border:1px solid #d8dce2;background:white;color:var(--ink)}textarea{min-height:68px;resize:vertical}input:focus,select:focus,textarea:focus{outline:2px solid rgba(183,28,28,.18);border-color:var(--red)}button{border:0;background:var(--red);color:white;font-weight:800;cursor:pointer;margin-top:8px;min-height:42px}.ghost{background:#eef0f3;color:#202124}.secondary{background:#2f3540}.danger{background:#7f1111}.soft{background:#fff;color:var(--red);border:1px solid #f1b8b8}.row{display:flex;gap:8px}.row>*{flex:1}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.course{border:1px solid var(--line);background:white;border-radius:14px;padding:11px;margin:8px 0}.course.selected{border-color:var(--red);background:var(--soft)}.course-title{font-weight:800;margin-bottom:3px}.course-meta{font-size:11px;color:var(--muted);line-height:1.35}.badge{display:inline-block;border-radius:999px;background:#eef0f3;font-size:10px;padding:3px 7px;margin:5px 5px 0 0}.badge.red{background:var(--soft);color:var(--red)}.toolbar{display:flex;gap:8px;align-items:center}.toolbar button{width:auto;min-width:92px}.hidden{display:none}.listbox{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}.member{padding:8px 10px;border-bottom:1px solid #eef0f3}.member:last-child{border-bottom:0}.member b{font-size:12px}.member div{font-size:11px;color:var(--muted);word-break:break-all}.danger-zone{border-color:#f1b8b8;background:#fff7f7}@media (max-width:560px){.row,.grid2,.grid3{display:block}.toolbar{display:grid;grid-template-columns:1fr 1fr}.toolbar button{width:100%}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1>Clases</h1>
+    <p>Crear, buscar, editar y administrar aulas de Classroom.</p>
+  </div>
+
+  <div class="content">
+    <div class="card">
+      <div class="title">Buscar clases</div>
+      <div class="grid2">
+        <div><label>Texto</label><input id="fTexto" placeholder="Nombre, materia, sección, código"></div>
+        <div><label>Profesor</label><input id="fProfesor" placeholder="correo del profesor"></div>
+      </div>
+      <div class="grid3">
+        <div><label>Estado</label><select id="fEstado"><option value="ACTIVE">Activas</option><option value="ALL">Todas</option><option value="ARCHIVED">Archivadas</option></select></div>
+        <div><label>Sección</label><input id="fSeccion" placeholder="072A, 011B..."></div>
+        <div><label>Dueño / OU</label><input id="fDueno" placeholder="correo, ID u OU"></div>
+      </div>
+      <div class="row">
+        <button onclick="buscarClases()">Buscar</button>
+        <button class="ghost" onclick="limpiarFiltros()">Limpiar</button>
+      </div>
+      <div class="toolbar">
+        <button class="soft" onclick="seleccionarTodas()">Marcar</button>
+        <button class="soft" onclick="limpiarSeleccion()">Limpiar selección</button>
+        <button class="secondary" onclick="sincronizarSeleccion()">Enviar a AULAS</button>
+      </div>
+      <div id="estadoLista" class="status">Listo.</div>
+    </div>
+
+    <div class="card">
+      <div class="title">Crear clase</div>
+      <div class="grid2">
+        <div><label>Nombre</label><input id="cName" placeholder="Nombre de la clase"></div>
+        <div><label>Sección</label><input id="cSection" placeholder="Sección"></div>
+      </div>
+      <div class="grid2">
+        <div><label>Materia</label><input id="cSubject" placeholder="Materia"></div>
+        <div><label>Salón</label><input id="cRoom" placeholder="Salón"></div>
+      </div>
+      <label>Description heading</label><input id="cHeading" placeholder="Encabezado de descripción">
+      <label>Descripción</label><textarea id="cDescription" placeholder="Descripción"></textarea>
+      <label>Dueño</label><input id="cOwner" placeholder="correo del dueño">
+      <button onclick="crearClase()">Crear clase</button>
+      <div id="estadoCrear" class="status"></div>
+    </div>
+
+    <div id="resumen" class="card hidden">
+      <div class="title" id="contador">0 clases</div>
+      <div id="resultados"></div>
+    </div>
+
+    <div id="detalle" class="card hidden">
+      <div class="title">Ficha de clase</div>
+      <div id="detalleCabecera" class="small"></div>
+
+      <div class="grid2">
+        <div><label>Nombre</label><input id="dName"></div>
+        <div><label>Sección</label><input id="dSection"></div>
+      </div>
+      <div class="grid2">
+        <div><label>Materia</label><input id="dSubject"></div>
+        <div><label>Salón</label><input id="dRoom"></div>
+      </div>
+      <label>Description heading</label><input id="dHeading">
+      <label>Descripción</label><textarea id="dDescription"></textarea>
+      <label>Dueño</label><input id="dOwner" placeholder="correo o ID del nuevo dueño">
+      <div class="row">
+        <button onclick="actualizarClase()">Actualizar datos</button>
+        <button class="ghost" onclick="abrirClassroom()">Abrir Classroom</button>
+      </div>
+      <div class="row">
+        <button class="secondary" onclick="cambiarEstado('ARCHIVED')">Archivar</button>
+        <button class="secondary" onclick="cambiarEstado('ACTIVE')">Restaurar</button>
+      </div>
+      <div id="estadoDetalle" class="status"></div>
+
+      <div class="card danger-zone" style="box-shadow:none;margin-top:12px">
+        <div class="title">Eliminar clase</div>
+        <div class="small">Para eliminar escribe ELIMINAR o el Course ID.</div>
+        <input id="dEliminar" placeholder="ELIMINAR">
+        <button class="danger" onclick="eliminarClase()">Eliminar definitivamente</button>
+      </div>
+
+      <div class="card" style="box-shadow:none;margin-top:12px">
+        <div class="title">Usuarios de esta clase</div>
+        <div class="grid3">
+          <div><label>Tipo</label><select id="uTipo"><option>Alumno</option><option>Profesor</option></select></div>
+          <div><label>Correo</label><input id="uEmail" placeholder="correo"></div>
+          <div><label>&nbsp;</label><button onclick="agregarUsuario()">Agregar</button></div>
+        </div>
+        <button class="danger" onclick="retirarUsuario()">Retirar usuario</button>
+        <div id="estadoUsuario" class="status"></div>
+        <div class="grid2" style="margin-top:10px">
+          <div><div class="small"><b>Profesores</b></div><div id="listaProfesores" class="listbox"></div></div>
+          <div><div class="small"><b>Alumnos</b></div><div id="listaAlumnos" class="listbox"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let cursos=[], seleccion={}, actual=null;
+
+window.addEventListener('load',()=>buscarClases());
+
+function buscarClases(){
+  setEstado('estadoLista','Buscando...');
+  google.script.run.withSuccessHandler(res=>{
+    cursos=(res&&res.cursos)||[];
+    renderCursos();
+    setEstado('estadoLista',(res&&res.message)||'Consulta finalizada.');
+  }).withFailureHandler(err=>setEstado('estadoLista',msg(err))).panelClasesListar({
+    texto:val('fTexto'), profesor:val('fProfesor'), estado:val('fEstado'), seccion:val('fSeccion'), dueno:val('fDueno'), ownerOu:val('fDueno'), matchMode:'any'
+  });
+}
+
+function renderCursos(){
+  $('resumen').classList.toggle('hidden',!cursos.length);
+  $('contador').textContent=cursos.length+' clase(s) encontradas · '+Object.keys(seleccion).length+' seleccionada(s)';
+  const cont=$('resultados'); cont.innerHTML='';
+  cursos.forEach(c=>{
+    const div=document.createElement('div'); div.className='course'+(seleccion[c.id]?' selected':'');
+    div.innerHTML=`<div class="course-title">${esc(c.name||'(Sin nombre)')}</div><div class="course-meta">${esc(c.section||'Sin sección')} · ${esc(c.subject||'Sin materia')} · ${esc(c.courseState||'')}<br>${esc(c.id)} · Dueño: ${esc(c.ownerEmail||c.ownerId||'')}</div><span class="badge">${esc(c.enrollmentCode||'sin código')}</span>${c.courseState==='ARCHIVED'?'<span class="badge red">Archivada</span>':''}<div class="row"><button class="ghost" onclick="toggleCurso('${escAttr(c.id)}')">${seleccion[c.id]?'Quitar':'Seleccionar'}</button><button onclick="abrirDetalle('${escAttr(c.id)}')">Abrir ficha</button></div>`;
+    cont.appendChild(div);
+  });
+}
+
+function toggleCurso(id){ if(seleccion[id]) delete seleccion[id]; else seleccion[id]=true; renderCursos(); }
+function seleccionarTodas(){ cursos.forEach(c=>seleccion[c.id]=true); renderCursos(); }
+function limpiarSeleccion(){ seleccion={}; renderCursos(); }
+function limpiarFiltros(){ ['fTexto','fProfesor','fSeccion','fDueno'].forEach(id=>$(id).value=''); $('fEstado').value='ACTIVE'; buscarClases(); }
+
+function abrirDetalle(id){
+  setEstado('estadoDetalle','Cargando ficha...'); $('detalle').classList.remove('hidden');
+  google.script.run.withSuccessHandler(res=>{
+    actual=res.curso; llenarDetalle(res);
+    setEstado('estadoDetalle','Ficha cargada.');
+  }).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesDetalle(id);
+}
+
+function llenarDetalle(res){
+  const c=res.curso||{}; actual=c;
+  $('detalleCabecera').innerHTML=`<b>${esc(c.name||'')}</b><br>${esc(c.section||'')} · ${esc(c.courseState||'')} · ${esc(c.id||'')}<br>Dueño: ${esc(c.ownerEmail||c.ownerId||'')} ${c.ownerOu?'· '+esc(c.ownerOu):''}`;
+  $('dName').value=c.name||''; $('dSection').value=c.section||''; $('dSubject').value=c.subject||''; $('dRoom').value=c.room||''; $('dHeading').value=c.descriptionHeading||''; $('dDescription').value=c.description||''; $('dOwner').value=c.ownerEmail||c.ownerId||''; $('dEliminar').value='';
+  renderMiembros('listaProfesores',res.profesores||[]); renderMiembros('listaAlumnos',res.alumnos||[]);
+}
+
+function renderMiembros(id,items){
+  const cont=$(id); cont.innerHTML='';
+  if(!items.length){ cont.innerHTML='<div class="member"><div>Sin registros.</div></div>'; return; }
+  items.forEach(u=>{ const div=document.createElement('div'); div.className='member'; div.innerHTML=`<b>${esc(u.fullName||'(Sin nombre)')}</b><div>${esc(u.email||u.id||'')}</div>`; cont.appendChild(div); });
+}
+
+function crearClase(){
+  setEstado('estadoCrear','Creando...');
+  google.script.run.withSuccessHandler(res=>{ setEstado('estadoCrear',res.message||'Clase creada.'); buscarClases(); if(res.curso) abrirDetalle(res.curso.id); }).withFailureHandler(err=>setEstado('estadoCrear',msg(err))).panelClasesCrear({
+    name:val('cName'), section:val('cSection'), subject:val('cSubject'), room:val('cRoom'), descriptionHeading:val('cHeading'), description:val('cDescription'), ownerId:val('cOwner'), courseState:'ACTIVE'
+  });
+}
+
+function actualizarClase(){
+  if(!actual) return;
+  setEstado('estadoDetalle','Actualizando...');
+  google.script.run.withSuccessHandler(res=>{ setEstado('estadoDetalle',res.message||'Actualizada.'); abrirDetalle(actual.id); buscarClases(); }).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesActualizar(actual.id,{ name:val('dName'), section:val('dSection'), subject:val('dSubject'), room:val('dRoom'), descriptionHeading:val('dHeading'), description:val('dDescription'), ownerId:val('dOwner') });
+}
+
+function cambiarEstado(estado){
+  if(!actual) return;
+  if(!confirm((estado==='ARCHIVED'?'Archivar':'Restaurar')+' esta clase.')) return;
+  setEstado('estadoDetalle','Aplicando estado...');
+  google.script.run.withSuccessHandler(res=>{ setEstado('estadoDetalle',res.message||'Estado actualizado.'); abrirDetalle(actual.id); buscarClases(); }).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesCambiarEstado(actual.id,estado);
+}
+
+function eliminarClase(){
+  if(!actual) return;
+  const conf=val('dEliminar');
+  if(!confirm('Eliminar definitivamente esta clase.')) return;
+  setEstado('estadoDetalle','Eliminando...');
+  google.script.run.withSuccessHandler(res=>{ setEstado('estadoDetalle',res.message||'Eliminada.'); $('detalle').classList.add('hidden'); actual=null; buscarClases(); }).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesEliminar(actual.id,conf);
+}
+
+function agregarUsuario(){ aplicarUsuario('entrada'); }
+function retirarUsuario(){ aplicarUsuario('salida'); }
+function aplicarUsuario(accion){
+  if(!actual) return;
+  const email=val('uEmail'), tipo=val('uTipo');
+  if(!email){ setEstado('estadoUsuario','Escribe el correo.'); return; }
+  setEstado('estadoUsuario',(accion==='entrada'?'Agregando...':'Retirando...'));
+  google.script.run.withSuccessHandler(res=>{ setEstado('estadoUsuario',res.message||'Operación finalizada.'); abrirDetalle(actual.id); }).withFailureHandler(err=>setEstado('estadoUsuario',msg(err))).panelClasesAplicarUsuario(actual.id,email,tipo,accion);
+}
+
+function sincronizarSeleccion(){
+  const ids=Object.keys(seleccion);
+  if(!ids.length){ setEstado('estadoLista','Selecciona al menos una clase.'); return; }
+  setEstado('estadoLista','Sincronizando con AULAS...');
+  google.script.run.withSuccessHandler(res=>setEstado('estadoLista',res.message||'Sincronizado.')).withFailureHandler(err=>setEstado('estadoLista',msg(err))).panelClasesSincronizarAulas(ids);
+}
+
+function abrirClassroom(){ if(actual&&actual.alternateLink) window.open(actual.alternateLink,'_blank'); }
+function val(id){ return ($(id)&&$(id).value||'').trim(); }
+function setEstado(id,texto){ if($(id)) $(id).textContent=texto||''; }
+function msg(err){ return (err&&err.message)||String(err||'Error'); }
+function $(id){ return document.getElementById(id); }
+function esc(v){ return String(v||'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function escAttr(v){ return esc(v).replace(/`/g,'&#96;'); }
+</script>
+</body>
+</html>
