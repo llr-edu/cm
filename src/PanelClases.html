@@ -4,218 +4,288 @@
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <style>
-    :root{--red:#b71c1c;--ink:#202124;--muted:#6b7280;--line:#e5e7eb;--bg:#f6f7f9;--card:#fff;--soft:#fff4f4;--radius:16px;--shadow:0 6px 22px rgba(0,0,0,.08)}
-    *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Roboto,sans-serif;font-size:14px}body{padding-bottom:20px}.app{max-width:720px;margin:0 auto;min-height:100vh}.top{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,var(--red),#5f0d0d);color:#fff;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,.16)}.top h1{font-size:18px;margin:0 0 3px}.top p{margin:0;font-size:12px;opacity:.9}.content{padding:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin-bottom:12px}.title{font-size:15px;font-weight:800;margin:0 0 9px}.small{font-size:12px;color:var(--muted);line-height:1.35}.status{font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;line-height:1.35}label{display:block;font-size:12px;font-weight:700;margin:9px 0 5px;color:#374151}input,select,textarea,button{width:100%;font-size:14px;border-radius:12px;padding:10px}input,select,textarea{border:1px solid #d8dce2;background:white;color:var(--ink)}textarea{min-height:68px;resize:vertical}input:focus,select:focus,textarea:focus{outline:2px solid rgba(183,28,28,.18);border-color:var(--red)}button{border:0;background:var(--red);color:white;font-weight:800;cursor:pointer;margin-top:8px;min-height:42px}.ghost{background:#eef0f3;color:#202124}.secondary{background:#2f3540}.danger{background:#7f1111}.soft{background:#fff;color:var(--red);border:1px solid #f1b8b8}.row{display:flex;gap:8px}.row>*{flex:1}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.course{border:1px solid var(--line);background:white;border-radius:14px;padding:11px;margin:8px 0}.course.selected{border-color:var(--red);background:var(--soft)}.course-title{font-weight:800;margin-bottom:3px}.course-meta{font-size:11px;color:var(--muted);line-height:1.35}.badge{display:inline-block;border-radius:999px;background:#eef0f3;font-size:10px;padding:3px 7px;margin:5px 5px 0 0}.badge.red{background:var(--soft);color:var(--red)}.toolbar{display:flex;gap:8px;align-items:center}.toolbar button{width:auto;min-width:92px}.hidden{display:none}.listbox{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}.member{padding:8px 10px;border-bottom:1px solid #eef0f3}.member:last-child{border-bottom:0}.member b{font-size:12px}.member div{font-size:11px;color:var(--muted);word-break:break-all}.danger-zone{border-color:#f1b8b8;background:#fff7f7}@media (max-width:560px){.row,.grid2,.grid3{display:block}.toolbar{display:grid;grid-template-columns:1fr 1fr}.toolbar button{width:100%}}
+    :root{--red:#b71c1c;--red-dark:#6f1010;--ink:#1f2933;--muted:#667085;--line:#e5e7eb;--bg:#f5f6f8;--card:#fff;--soft:#fff3f3;--soft2:#f8fafc;--danger:#7f1111;--dark:#2f3540;--radius:16px;--shadow:0 10px 30px rgba(15,23,42,.08)}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Roboto,sans-serif;font-size:14px}
+    body{min-height:100vh}
+    .app{min-height:100vh;display:grid;grid-template-rows:auto 1fr}
+    .top{background:linear-gradient(135deg,var(--red),var(--red-dark));color:#fff;padding:14px 18px;box-shadow:0 6px 18px rgba(0,0,0,.16);position:sticky;top:0;z-index:20}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1500px;margin:0 auto}
+    h1{font-size:19px;margin:0}.top p{margin:3px 0 0;font-size:12px;opacity:.9}.top-actions{display:flex;gap:8px;align-items:center}.top-actions button{width:auto;min-height:38px;margin:0;background:#fff;color:var(--red);padding:8px 12px}
+    .shell{display:grid;grid-template-columns:310px minmax(420px,1fr) 390px;gap:14px;max-width:1500px;width:100%;margin:0 auto;padding:14px}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;min-width:0}.panel.sticky{position:sticky;top:76px;align-self:start}.title{font-size:15px;font-weight:800;margin:0 0 9px}.subtitle{font-size:12px;color:var(--muted);line-height:1.35;margin-top:-2px}.section-title{font-size:12px;font-weight:800;color:#344054;text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px}
+    label{display:block;font-size:12px;font-weight:800;margin:10px 0 5px;color:#344054}input,select,textarea,button{width:100%;font-size:14px;border-radius:12px;padding:10px}input,select,textarea{border:1px solid #d6dbe3;background:#fff;color:var(--ink)}textarea{min-height:74px;resize:vertical}input:focus,select:focus,textarea:focus{outline:2px solid rgba(183,28,28,.16);border-color:var(--red)}button{border:0;background:var(--red);color:#fff;font-weight:800;cursor:pointer;margin-top:8px;min-height:42px}button:disabled{opacity:.52;cursor:default}.ghost{background:#eef1f5;color:#202124}.secondary{background:var(--dark)}.soft{background:#fff;color:var(--red);border:1px solid #efc1c1}.danger{background:var(--danger)}.row{display:flex;gap:8px}.row>*{flex:1}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.status{font-size:12px;color:var(--muted);line-height:1.35;min-height:16px;margin-top:8px}.divider{height:1px;background:var(--line);margin:12px 0}
+    .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}.stat{background:var(--soft2);border:1px solid var(--line);border-radius:14px;padding:10px}.stat b{display:block;font-size:18px}.stat span{font-size:11px;color:var(--muted)}
+    .table-wrap{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:auto;min-height:410px;max-height:calc(100vh - 205px)}table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;border-bottom:1px solid #edf0f4;padding:10px 11px;vertical-align:top}th{position:sticky;top:0;background:#f9fafb;color:#344054;font-size:11px;text-transform:uppercase;letter-spacing:.04em;z-index:1}td{font-size:13px}.tr{cursor:pointer}.tr:hover{background:#fafafa}.tr.selected{background:var(--soft)}.course-name{font-weight:800}.meta{font-size:11px;color:var(--muted);line-height:1.35}.badge{display:inline-block;border-radius:999px;background:#eef1f5;color:#344054;font-size:10px;padding:3px 7px;margin:2px 4px 2px 0}.badge.red{background:var(--soft);color:var(--red)}.checkcell{width:38px}.empty{padding:28px;text-align:center;color:var(--muted);font-size:13px}.mobile-card{display:none}
+    .detail-empty{display:flex;align-items:center;justify-content:center;min-height:420px;color:var(--muted);text-align:center;padding:18px}.detail-head{background:var(--soft2);border:1px solid var(--line);border-radius:14px;padding:11px;margin-bottom:12px}.detail-head b{font-size:15px}.detail-head .small{font-size:12px;color:var(--muted);line-height:1.4;margin-top:4px;word-break:break-word}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 12px}.tabs button{margin:0;background:#eef1f5;color:#344054;min-height:38px}.tabs button.active{background:var(--red);color:#fff}.tab{display:none}.tab.active{display:block}.danger-zone{background:#fff7f7;border:1px solid #f1b8b8;border-radius:14px;padding:12px;margin-top:12px}.listbox{border:1px solid var(--line);border-radius:14px;max-height:230px;overflow:auto;background:#fff}.member{padding:8px 10px;border-bottom:1px solid #eef0f3}.member:last-child{border-bottom:0}.member b{font-size:12px}.member div{font-size:11px;color:var(--muted);word-break:break-all}
+    .loader{display:inline-block;width:12px;height:12px;border:2px solid #e6e8ec;border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:-2px}@keyframes spin{to{transform:rotate(360deg)}}
+    @media (max-width:1180px){.shell{grid-template-columns:300px minmax(420px,1fr)}.right{grid-column:1/-1}.right .panel{position:static}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.detail-grid>.wide{grid-column:1/-1}}
+    @media (max-width:760px){body{padding-bottom:72px}.top{padding:12px}.topbar{display:block}.top-actions{margin-top:10px}.top-actions button{width:100%}.shell{display:block;padding:10px}.panel{margin-bottom:10px;box-shadow:0 6px 22px rgba(15,23,42,.06)}.panel.sticky{position:static}.stats{grid-template-columns:1fr 1fr}.row,.grid2,.grid3{display:block}.table-wrap{display:none}.mobile-card{display:block;border:1px solid var(--line);background:#fff;border-radius:14px;padding:11px;margin:8px 0}.mobile-card.selected{border-color:var(--red);background:var(--soft)}.mobile-card .course-name{font-size:14px}.mobile-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.mobile-actions button{margin:0}.detail-grid{display:block}.right{display:block}.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:1fr 1fr 1fr;background:#fff;border-top:1px solid var(--line);padding:7px 8px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.08)}.bottom-nav button{margin:0;background:#fff;color:#4b5563;border-radius:12px;min-height:46px;padding:6px;font-size:12px}.bottom-nav button.active{background:var(--soft);color:var(--red)}.only-desktop{display:none!important}}
+    @media (min-width:761px){.bottom-nav{display:none}.only-mobile{display:none!important}}
   </style>
 </head>
 <body>
 <div class="app">
   <div class="top">
-    <h1>Clases</h1>
-    <p>Crear, buscar, editar y administrar aulas de Classroom.</p>
-  </div>
-
-  <div class="content">
-    <div class="card">
-      <div class="title">Buscar clases</div>
-      <div class="grid2">
-        <div><label>Texto</label><input id="fTexto" placeholder="Nombre, materia, sección, código"></div>
-        <div><label>Profesor</label><input id="fProfesor" placeholder="correo del profesor"></div>
-      </div>
-      <div class="grid3">
-        <div><label>Estado</label><select id="fEstado"><option value="ACTIVE">Activas</option><option value="ALL">Todas</option><option value="ARCHIVED">Archivadas</option></select></div>
-        <div><label>Sección</label><input id="fSeccion" placeholder="072A, 011B..."></div>
-        <div><label>Dueño / OU</label><input id="fDueno" placeholder="correo, ID u OU"></div>
-      </div>
-      <div class="row">
-        <button onclick="buscarClases()">Buscar</button>
-        <button class="ghost" onclick="limpiarFiltros()">Limpiar</button>
-      </div>
-      <div class="toolbar">
-        <button class="soft" onclick="seleccionarTodas()">Marcar</button>
-        <button class="soft" onclick="limpiarSeleccion()">Limpiar selección</button>
-        <button class="secondary" onclick="sincronizarSeleccion()">Enviar a AULAS</button>
-      </div>
-      <div id="estadoLista" class="status">Listo.</div>
-    </div>
-
-    <div class="card">
-      <div class="title">Crear clase</div>
-      <div class="grid2">
-        <div><label>Nombre</label><input id="cName" placeholder="Nombre de la clase"></div>
-        <div><label>Sección</label><input id="cSection" placeholder="Sección"></div>
-      </div>
-      <div class="grid2">
-        <div><label>Materia</label><input id="cSubject" placeholder="Materia"></div>
-        <div><label>Salón</label><input id="cRoom" placeholder="Salón"></div>
-      </div>
-      <label>Description heading</label><input id="cHeading" placeholder="Encabezado de descripción">
-      <label>Descripción</label><textarea id="cDescription" placeholder="Descripción"></textarea>
-      <label>Dueño</label><input id="cOwner" placeholder="correo del dueño">
-      <button onclick="crearClase()">Crear clase</button>
-      <div id="estadoCrear" class="status"></div>
-    </div>
-
-    <div id="resumen" class="card hidden">
-      <div class="title" id="contador">0 clases</div>
-      <div id="resultados"></div>
-    </div>
-
-    <div id="detalle" class="card hidden">
-      <div class="title">Ficha de clase</div>
-      <div id="detalleCabecera" class="small"></div>
-
-      <div class="grid2">
-        <div><label>Nombre</label><input id="dName"></div>
-        <div><label>Sección</label><input id="dSection"></div>
-      </div>
-      <div class="grid2">
-        <div><label>Materia</label><input id="dSubject"></div>
-        <div><label>Salón</label><input id="dRoom"></div>
-      </div>
-      <label>Description heading</label><input id="dHeading">
-      <label>Descripción</label><textarea id="dDescription"></textarea>
-      <label>Dueño</label><input id="dOwner" placeholder="correo o ID del nuevo dueño">
-      <div class="row">
-        <button onclick="actualizarClase()">Actualizar datos</button>
-        <button class="ghost" onclick="abrirClassroom()">Abrir Classroom</button>
-      </div>
-      <div class="row">
-        <button class="secondary" onclick="cambiarEstado('ARCHIVED')">Archivar</button>
-        <button class="secondary" onclick="cambiarEstado('ACTIVE')">Restaurar</button>
-      </div>
-      <div id="estadoDetalle" class="status"></div>
-
-      <div class="card danger-zone" style="box-shadow:none;margin-top:12px">
-        <div class="title">Eliminar clase</div>
-        <div class="small">Para eliminar escribe ELIMINAR o el Course ID.</div>
-        <input id="dEliminar" placeholder="ELIMINAR">
-        <button class="danger" onclick="eliminarClase()">Eliminar definitivamente</button>
-      </div>
-
-      <div class="card" style="box-shadow:none;margin-top:12px">
-        <div class="title">Usuarios de esta clase</div>
-        <div class="grid3">
-          <div><label>Tipo</label><select id="uTipo"><option>Alumno</option><option>Profesor</option></select></div>
-          <div><label>Correo</label><input id="uEmail" placeholder="correo"></div>
-          <div><label>&nbsp;</label><button onclick="agregarUsuario()">Agregar</button></div>
-        </div>
-        <button class="danger" onclick="retirarUsuario()">Retirar usuario</button>
-        <div id="estadoUsuario" class="status"></div>
-        <div class="grid2" style="margin-top:10px">
-          <div><div class="small"><b>Profesores</b></div><div id="listaProfesores" class="listbox"></div></div>
-          <div><div class="small"><b>Alumnos</b></div><div id="listaAlumnos" class="listbox"></div></div>
-        </div>
-      </div>
+    <div class="topbar">
+      <div><h1>Clases</h1><p>Crear, buscar, editar y administrar aulas de Classroom.</p></div>
+      <div class="top-actions"><button onclick="mostrarVista('buscar')" type="button">Buscar</button><button onclick="mostrarVista('crear')" type="button">Crear clase</button></div>
     </div>
   </div>
+
+  <div class="shell">
+    <aside class="left" id="bloqueFiltros">
+      <div class="panel sticky">
+        <div class="title">Consulta</div>
+        <div class="subtitle">La lista no carga automáticamente. Usa filtros y presiona Buscar.</div>
+        <label>Texto</label><input id="fTexto" placeholder="Nombre, materia, sección, código">
+        <label>Profesor</label><input id="fProfesor" placeholder="correo del profesor">
+        <div class="grid2"><div><label>Estado</label><select id="fEstado"><option value="ACTIVE">Activas</option><option value="ALL">Todas</option><option value="ARCHIVED">Archivadas</option><option value="PROVISIONED">Provisionadas</option><option value="SUSPENDED">Suspendidas</option></select></div><div><label>Coincidencia</label><select id="fMatch"><option value="any">Cualquier filtro</option><option value="all">Todos los filtros</option></select></div></div>
+        <label>Sección</label><input id="fSeccion" placeholder="072A, 011B...">
+        <label>Dueño / OU</label><input id="fDueno" placeholder="correo, ID u OU">
+        <label>Description heading</label><input id="fHeading" placeholder="encabezado">
+        <div class="row"><button onclick="buscarClases()" type="button">Buscar</button><button class="ghost" onclick="limpiarFiltros()" type="button">Limpiar</button></div>
+        <div class="divider"></div>
+        <div class="section-title">Selección</div>
+        <div class="row"><button class="soft" onclick="seleccionarTodas()" type="button">Marcar</button><button class="soft" onclick="limpiarSeleccion()" type="button">Limpiar</button></div>
+        <button class="secondary" onclick="sincronizarSeleccion()" id="btnSync" type="button" disabled>Enviar selección a AULAS</button>
+        <div id="estadoLista" class="status">Listo.</div>
+      </div>
+    </aside>
+
+    <main class="center" id="bloqueResultados">
+      <div class="panel">
+        <div class="stats">
+          <div class="stat"><b id="statTotal">0</b><span>clases</span></div>
+          <div class="stat"><b id="statSel">0</b><span>seleccionadas</span></div>
+          <div class="stat"><b id="statEstado">—</b><span>estado</span></div>
+        </div>
+        <div class="table-wrap" id="tablaWrap"><div class="empty">Presiona Buscar para consultar Classroom.</div></div>
+        <div id="mobileResultados"></div>
+      </div>
+    </main>
+
+    <aside class="right" id="bloqueDetalle">
+      <div class="panel sticky">
+        <div id="detalleVacio" class="detail-empty">Selecciona una clase para ver su ficha administrativa.</div>
+        <div id="detalleContenido" style="display:none">
+          <div class="detail-head"><b id="dTitulo"></b><div id="dMeta" class="small"></div></div>
+          <div class="tabs"><button id="tabDatosBtn" class="active" onclick="tabDetalle('datos')" type="button">Datos</button><button id="tabUsuariosBtn" onclick="tabDetalle('usuarios')" type="button">Usuarios</button></div>
+          <div id="tabDatos" class="tab active">
+            <div class="detail-grid">
+              <div><label>Nombre</label><input id="dName"></div><div><label>Sección</label><input id="dSection"></div>
+              <div><label>Materia</label><input id="dSubject"></div><div><label>Salón</label><input id="dRoom"></div>
+              <div class="wide"><label>Description heading</label><input id="dHeading"></div>
+              <div class="wide"><label>Descripción</label><textarea id="dDescription"></textarea></div>
+              <div class="wide"><label>Dueño</label><input id="dOwner" placeholder="correo o ID del nuevo dueño"></div>
+            </div>
+            <div class="row"><button onclick="actualizarClase()" id="btnActualizar" type="button">Actualizar</button><button class="ghost" onclick="abrirClassroom()" type="button">Abrir Classroom</button></div>
+            <div class="row"><button class="secondary" onclick="cambiarEstado('ARCHIVED')" type="button">Archivar</button><button class="secondary" onclick="cambiarEstado('ACTIVE')" type="button">Restaurar</button></div>
+            <div id="estadoDetalle" class="status"></div>
+            <div class="danger-zone">
+              <div class="title">Eliminar clase</div>
+              <div class="subtitle">Confirma escribiendo ELIMINAR o el Course ID.</div>
+              <input id="dEliminar" placeholder="ELIMINAR">
+              <button class="danger" onclick="eliminarClase()" type="button">Eliminar definitivamente</button>
+            </div>
+          </div>
+          <div id="tabUsuarios" class="tab">
+            <div class="grid2"><div><label>Tipo</label><select id="uTipo"><option>Alumno</option><option>Profesor</option></select></div><div><label>Correo</label><input id="uEmail" placeholder="correo"></div></div>
+            <div class="row"><button onclick="agregarUsuario()" type="button">Agregar</button><button class="danger" onclick="retirarUsuario()" type="button">Retirar</button></div>
+            <div id="estadoUsuario" class="status"></div>
+            <div class="grid2"><div><label>Profesores</label><div id="listaProfesores" class="listbox"><div class="member"><div>Sin datos.</div></div></div></div><div><label>Alumnos</label><div id="listaAlumnos" class="listbox"><div class="member"><div>Sin datos.</div></div></div></div></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="only-mobile" id="bloqueCrearMobile" style="display:none">
+      <div class="panel" id="crearPanelMobile"></div>
+    </section>
+  </div>
+
+  <div class="bottom-nav only-mobile"><button id="navBuscar" class="active" onclick="mostrarVista('buscar')" type="button">Buscar</button><button id="navDetalle" onclick="mostrarVista('detalle')" type="button">Ficha</button><button id="navCrear" onclick="mostrarVista('crear')" type="button">Crear</button></div>
 </div>
 
-<script>
-let cursos=[], seleccion={}, actual=null;
+<template id="tplCrear">
+  <div class="title">Crear clase</div>
+  <div class="subtitle">Crea una clase individual. Luego puedes abrir la ficha y agregar usuarios.</div>
+  <div class="grid2"><div><label>Nombre</label><input id="cName" placeholder="Nombre de la clase"></div><div><label>Sección</label><input id="cSection" placeholder="Sección"></div></div>
+  <div class="grid2"><div><label>Materia</label><input id="cSubject" placeholder="Materia"></div><div><label>Salón</label><input id="cRoom" placeholder="Salón"></div></div>
+  <label>Description heading</label><input id="cHeading" placeholder="Encabezado de descripción">
+  <label>Descripción</label><textarea id="cDescription" placeholder="Descripción"></textarea>
+  <label>Dueño</label><input id="cOwner" placeholder="correo del dueño">
+  <button onclick="crearClase()" type="button">Crear clase</button>
+  <div id="estadoCrear" class="status"></div>
+</template>
 
-window.addEventListener('load',()=>buscarClases());
+<script>
+let cursos=[], seleccion={}, actual=null, vista='buscar';
+
+window.addEventListener('load',()=>{
+  montarCrear();
+  actualizarStats();
+});
+
+function montarCrear(){
+  const tpl=document.getElementById('tplCrear').innerHTML;
+  const panel=document.createElement('div');
+  panel.className='panel sticky';
+  panel.id='crearPanelDesktop';
+  panel.innerHTML=tpl;
+  panel.style.display='none';
+  document.querySelector('.left').appendChild(panel);
+  document.getElementById('crearPanelMobile').innerHTML=tpl;
+}
+
+function mostrarVista(v){
+  vista=v;
+  const filtros=document.getElementById('bloqueFiltros');
+  const resultados=document.getElementById('bloqueResultados');
+  const detalle=document.getElementById('bloqueDetalle');
+  const crearDesk=document.getElementById('crearPanelDesktop');
+  const crearMob=document.getElementById('bloqueCrearMobile');
+  const esMovil=window.matchMedia('(max-width:760px)').matches;
+  ['navBuscar','navDetalle','navCrear'].forEach(id=>{const el=document.getElementById(id); if(el) el.classList.remove('active');});
+  if(document.getElementById('nav'+cap(v))) document.getElementById('nav'+cap(v)).classList.add('active');
+  if(esMovil){
+    filtros.style.display=v==='buscar'?'block':'none';
+    resultados.style.display=v==='buscar'?'block':'none';
+    detalle.style.display=v==='detalle'?'block':'none';
+    crearMob.style.display=v==='crear'?'block':'none';
+  }else{
+    filtros.style.display='block'; resultados.style.display='block'; detalle.style.display='block'; crearMob.style.display='none'; crearDesk.style.display=v==='crear'?'block':'none';
+  }
+}
 
 function buscarClases(){
-  setEstado('estadoLista','Buscando...');
+  setEstado('estadoLista','<span class="loader"></span>Buscando clases...');
   google.script.run.withSuccessHandler(res=>{
     cursos=(res&&res.cursos)||[];
     renderCursos();
     setEstado('estadoLista',(res&&res.message)||'Consulta finalizada.');
   }).withFailureHandler(err=>setEstado('estadoLista',msg(err))).panelClasesListar({
-    texto:val('fTexto'), profesor:val('fProfesor'), estado:val('fEstado'), seccion:val('fSeccion'), dueno:val('fDueno'), ownerOu:val('fDueno'), matchMode:'any'
+    texto:val('fTexto'), profesor:val('fProfesor'), estado:val('fEstado'), seccion:val('fSeccion'), dueno:val('fDueno'), ownerOu:val('fDueno'), descriptionHeading:val('fHeading'), matchMode:val('fMatch')||'any'
   });
 }
 
 function renderCursos(){
-  $('resumen').classList.toggle('hidden',!cursos.length);
-  $('contador').textContent=cursos.length+' clase(s) encontradas · '+Object.keys(seleccion).length+' seleccionada(s)';
-  const cont=$('resultados'); cont.innerHTML='';
-  cursos.forEach(c=>{
-    const div=document.createElement('div'); div.className='course'+(seleccion[c.id]?' selected':'');
-    div.innerHTML=`<div class="course-title">${esc(c.name||'(Sin nombre)')}</div><div class="course-meta">${esc(c.section||'Sin sección')} · ${esc(c.subject||'Sin materia')} · ${esc(c.courseState||'')}<br>${esc(c.id)} · Dueño: ${esc(c.ownerEmail||c.ownerId||'')}</div><span class="badge">${esc(c.enrollmentCode||'sin código')}</span>${c.courseState==='ARCHIVED'?'<span class="badge red">Archivada</span>':''}<div class="row"><button class="ghost" onclick="toggleCurso('${escAttr(c.id)}')">${seleccion[c.id]?'Quitar':'Seleccionar'}</button><button onclick="abrirDetalle('${escAttr(c.id)}')">Abrir ficha</button></div>`;
-    cont.appendChild(div);
-  });
+  actualizarStats();
+  const wrap=document.getElementById('tablaWrap');
+  const mob=document.getElementById('mobileResultados');
+  if(!cursos.length){
+    wrap.innerHTML='<div class="empty">No hay clases para mostrar.</div>';
+    mob.innerHTML='<div class="empty">No hay clases para mostrar.</div>';
+    return;
+  }
+  wrap.innerHTML='<table><thead><tr><th class="checkcell"></th><th>Clase</th><th>Sección</th><th>Materia</th><th>Estado</th><th>Dueño</th><th>Código</th></tr></thead><tbody>'+cursos.map(c=>filaCurso(c)).join('')+'</tbody></table>';
+  mob.innerHTML=cursos.map(c=>cardCurso(c)).join('');
 }
 
+function filaCurso(c){
+  const sel=!!seleccion[c.id], abierto=actual&&actual.id===c.id;
+  return `<tr class="tr ${abierto?'selected':''}" onclick="abrirDetalle('${attr(c.id)}')"><td class="checkcell" onclick="event.stopPropagation()"><input type="checkbox" ${sel?'checked':''} onchange="toggleCurso('${attr(c.id)}')"></td><td><div class="course-name">${esc(c.name||'(Sin nombre)')}</div><div class="meta">${esc(c.id||'')}</div></td><td>${esc(c.section||'')}</td><td>${esc(c.subject||'')}</td><td>${badge(c.courseState)}</td><td><div class="meta">${esc(c.ownerEmail||c.ownerId||'')}</div></td><td>${esc(c.enrollmentCode||'')}</td></tr>`;
+}
+
+function cardCurso(c){
+  const sel=!!seleccion[c.id], abierto=actual&&actual.id===c.id;
+  return `<div class="mobile-card ${abierto||sel?'selected':''}"><div class="course-name">${esc(c.name||'(Sin nombre)')}</div><div class="meta">${esc(c.section||'Sin sección')} · ${esc(c.subject||'Sin materia')} · ${esc(c.id||'')}</div>${badge(c.courseState)}<span class="badge">${esc(c.enrollmentCode||'sin código')}</span><div class="mobile-actions"><button class="ghost" onclick="toggleCurso('${attr(c.id)}')" type="button">${sel?'Quitar':'Seleccionar'}</button><button onclick="abrirDetalle('${attr(c.id)}')" type="button">Abrir ficha</button></div></div>`;
+}
+
+function badge(estado){return `<span class="badge ${estado==='ARCHIVED'?'red':''}">${esc(estado||'')}</span>`;}
 function toggleCurso(id){ if(seleccion[id]) delete seleccion[id]; else seleccion[id]=true; renderCursos(); }
 function seleccionarTodas(){ cursos.forEach(c=>seleccion[c.id]=true); renderCursos(); }
 function limpiarSeleccion(){ seleccion={}; renderCursos(); }
-function limpiarFiltros(){ ['fTexto','fProfesor','fSeccion','fDueno'].forEach(id=>$(id).value=''); $('fEstado').value='ACTIVE'; buscarClases(); }
+function limpiarFiltros(){ ['fTexto','fProfesor','fSeccion','fDueno','fHeading'].forEach(id=>setVal(id,'')); setVal('fEstado','ACTIVE'); setVal('fMatch','any'); }
+
+function actualizarStats(){
+  document.getElementById('statTotal').textContent=cursos.length;
+  document.getElementById('statSel').textContent=Object.keys(seleccion).length;
+  document.getElementById('statEstado').textContent=val('fEstado')||'—';
+  document.getElementById('btnSync').disabled=!Object.keys(seleccion).length;
+}
 
 function abrirDetalle(id){
-  setEstado('estadoDetalle','Cargando ficha...'); $('detalle').classList.remove('hidden');
-  google.script.run.withSuccessHandler(res=>{
-    actual=res.curso; llenarDetalle(res);
-    setEstado('estadoDetalle','Ficha cargada.');
-  }).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesDetalle(id);
+  mostrarVista('detalle');
+  setEstado('estadoDetalle','<span class="loader"></span>Cargando ficha...');
+  document.getElementById('detalleVacio').style.display='none';
+  document.getElementById('detalleContenido').style.display='block';
+  google.script.run.withSuccessHandler(res=>{llenarDetalle(res);setEstado('estadoDetalle','Ficha cargada.');}).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesDetalle(id);
 }
 
 function llenarDetalle(res){
-  const c=res.curso||{}; actual=c;
-  $('detalleCabecera').innerHTML=`<b>${esc(c.name||'')}</b><br>${esc(c.section||'')} · ${esc(c.courseState||'')} · ${esc(c.id||'')}<br>Dueño: ${esc(c.ownerEmail||c.ownerId||'')} ${c.ownerOu?'· '+esc(c.ownerOu):''}`;
-  $('dName').value=c.name||''; $('dSection').value=c.section||''; $('dSubject').value=c.subject||''; $('dRoom').value=c.room||''; $('dHeading').value=c.descriptionHeading||''; $('dDescription').value=c.description||''; $('dOwner').value=c.ownerEmail||c.ownerId||''; $('dEliminar').value='';
-  renderMiembros('listaProfesores',res.profesores||[]); renderMiembros('listaAlumnos',res.alumnos||[]);
+  const c=(res&&res.curso)||{}; actual=c;
+  document.getElementById('dTitulo').textContent=c.name||'(Sin nombre)';
+  document.getElementById('dMeta').innerHTML=`${esc(c.section||'Sin sección')} · ${esc(c.courseState||'')} · ${esc(c.id||'')}<br>Dueño: ${esc(c.ownerEmail||c.ownerId||'')} ${c.ownerOu?'· '+esc(c.ownerOu):''}`;
+  setVal('dName',c.name); setVal('dSection',c.section); setVal('dSubject',c.subject); setVal('dRoom',c.room); setVal('dHeading',c.descriptionHeading); setVal('dDescription',c.description); setVal('dOwner',c.ownerEmail||c.ownerId); setVal('dEliminar','');
+  renderMiembros('listaProfesores',(res&&res.profesores)||[]); renderMiembros('listaAlumnos',(res&&res.alumnos)||[]);
+  renderCursos();
+}
+
+function tabDetalle(tab){
+  document.getElementById('tabDatos').classList.toggle('active',tab==='datos');
+  document.getElementById('tabUsuarios').classList.toggle('active',tab==='usuarios');
+  document.getElementById('tabDatosBtn').classList.toggle('active',tab==='datos');
+  document.getElementById('tabUsuariosBtn').classList.toggle('active',tab==='usuarios');
 }
 
 function renderMiembros(id,items){
-  const cont=$(id); cont.innerHTML='';
+  const cont=document.getElementById(id); cont.innerHTML='';
   if(!items.length){ cont.innerHTML='<div class="member"><div>Sin registros.</div></div>'; return; }
   items.forEach(u=>{ const div=document.createElement('div'); div.className='member'; div.innerHTML=`<b>${esc(u.fullName||'(Sin nombre)')}</b><div>${esc(u.email||u.id||'')}</div>`; cont.appendChild(div); });
 }
 
 function crearClase(){
-  setEstado('estadoCrear','Creando...');
-  google.script.run.withSuccessHandler(res=>{ setEstado('estadoCrear',res.message||'Clase creada.'); buscarClases(); if(res.curso) abrirDetalle(res.curso.id); }).withFailureHandler(err=>setEstado('estadoCrear',msg(err))).panelClasesCrear({
+  setEstado('estadoCrear','<span class="loader"></span>Creando clase...');
+  google.script.run.withSuccessHandler(res=>{setEstado('estadoCrear',res.message||'Clase creada.'); if(res.curso) abrirDetalle(res.curso.id);}).withFailureHandler(err=>setEstado('estadoCrear',msg(err))).panelClasesCrear({
     name:val('cName'), section:val('cSection'), subject:val('cSubject'), room:val('cRoom'), descriptionHeading:val('cHeading'), description:val('cDescription'), ownerId:val('cOwner'), courseState:'ACTIVE'
   });
 }
 
 function actualizarClase(){
   if(!actual) return;
-  setEstado('estadoDetalle','Actualizando...');
-  google.script.run.withSuccessHandler(res=>{ setEstado('estadoDetalle',res.message||'Actualizada.'); abrirDetalle(actual.id); buscarClases(); }).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesActualizar(actual.id,{ name:val('dName'), section:val('dSection'), subject:val('dSubject'), room:val('dRoom'), descriptionHeading:val('dHeading'), description:val('dDescription'), ownerId:val('dOwner') });
+  setEstado('estadoDetalle','<span class="loader"></span>Actualizando...');
+  google.script.run.withSuccessHandler(res=>{setEstado('estadoDetalle',res.message||'Clase actualizada.'); abrirDetalle(actual.id);}).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesActualizar(actual.id,{name:val('dName'),section:val('dSection'),subject:val('dSubject'),room:val('dRoom'),descriptionHeading:val('dHeading'),description:val('dDescription'),ownerId:val('dOwner')});
 }
 
 function cambiarEstado(estado){
   if(!actual) return;
   if(!confirm((estado==='ARCHIVED'?'Archivar':'Restaurar')+' esta clase.')) return;
-  setEstado('estadoDetalle','Aplicando estado...');
-  google.script.run.withSuccessHandler(res=>{ setEstado('estadoDetalle',res.message||'Estado actualizado.'); abrirDetalle(actual.id); buscarClases(); }).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesCambiarEstado(actual.id,estado);
+  setEstado('estadoDetalle','<span class="loader"></span>Aplicando estado...');
+  google.script.run.withSuccessHandler(res=>{setEstado('estadoDetalle',res.message||'Estado actualizado.'); abrirDetalle(actual.id);}).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesCambiarEstado(actual.id,estado);
 }
 
 function eliminarClase(){
   if(!actual) return;
   const conf=val('dEliminar');
   if(!confirm('Eliminar definitivamente esta clase.')) return;
-  setEstado('estadoDetalle','Eliminando...');
-  google.script.run.withSuccessHandler(res=>{ setEstado('estadoDetalle',res.message||'Eliminada.'); $('detalle').classList.add('hidden'); actual=null; buscarClases(); }).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesEliminar(actual.id,conf);
+  setEstado('estadoDetalle','<span class="loader"></span>Eliminando...');
+  google.script.run.withSuccessHandler(res=>{setEstado('estadoDetalle',res.message||'Clase eliminada.'); actual=null; document.getElementById('detalleContenido').style.display='none'; document.getElementById('detalleVacio').style.display='flex'; buscarClases();}).withFailureHandler(err=>setEstado('estadoDetalle',msg(err))).panelClasesEliminar(actual.id,conf);
 }
 
-function agregarUsuario(){ aplicarUsuario('entrada'); }
-function retirarUsuario(){ aplicarUsuario('salida'); }
+function agregarUsuario(){aplicarUsuario('agregar');}
+function retirarUsuario(){aplicarUsuario('retirar');}
 function aplicarUsuario(accion){
   if(!actual) return;
-  const email=val('uEmail'), tipo=val('uTipo');
-  if(!email){ setEstado('estadoUsuario','Escribe el correo.'); return; }
-  setEstado('estadoUsuario',(accion==='entrada'?'Agregando...':'Retirando...'));
-  google.script.run.withSuccessHandler(res=>{ setEstado('estadoUsuario',res.message||'Operación finalizada.'); abrirDetalle(actual.id); }).withFailureHandler(err=>setEstado('estadoUsuario',msg(err))).panelClasesAplicarUsuario(actual.id,email,tipo,accion);
+  setEstado('estadoUsuario','<span class="loader"></span>Procesando usuario...');
+  google.script.run.withSuccessHandler(res=>{setEstado('estadoUsuario',res.message||'Acción completada.'); abrirDetalle(actual.id); tabDetalle('usuarios');}).withFailureHandler(err=>setEstado('estadoUsuario',msg(err))).panelClasesAplicarUsuario(actual.id,val('uEmail'),val('uTipo'),accion);
 }
 
 function sincronizarSeleccion(){
   const ids=Object.keys(seleccion);
-  if(!ids.length){ setEstado('estadoLista','Selecciona al menos una clase.'); return; }
-  setEstado('estadoLista','Sincronizando con AULAS...');
+  if(!ids.length) return;
+  setEstado('estadoLista','<span class="loader"></span>Enviando a AULAS...');
   google.script.run.withSuccessHandler(res=>setEstado('estadoLista',res.message||'Sincronizado.')).withFailureHandler(err=>setEstado('estadoLista',msg(err))).panelClasesSincronizarAulas(ids);
 }
 
 function abrirClassroom(){ if(actual&&actual.alternateLink) window.open(actual.alternateLink,'_blank'); }
-function val(id){ return ($(id)&&$(id).value||'').trim(); }
-function setEstado(id,texto){ if($(id)) $(id).textContent=texto||''; }
-function msg(err){ return (err&&err.message)||String(err||'Error'); }
-function $(id){ return document.getElementById(id); }
-function esc(v){ return String(v||'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-function escAttr(v){ return esc(v).replace(/`/g,'&#96;'); }
+function val(id){ const el=document.getElementById(id); return el?String(el.value||'').trim():''; }
+function setVal(id,v){ const el=document.getElementById(id); if(el) el.value=v||''; }
+function setEstado(id,txt){ const el=document.getElementById(id); if(el) el.innerHTML=txt||''; }
+function msg(err){ return (err&&err.message)?err.message:String(err||'Error desconocido.'); }
+function esc(v){ return String(v||'').replace(/[&<>'"]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[s])); }
+function attr(v){ return esc(v).replace(/`/g,'&#96;'); }
+function cap(v){ return v.charAt(0).toUpperCase()+v.slice(1); }
 </script>
 </body>
 </html>
