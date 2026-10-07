@@ -116,3 +116,13 @@ function panelAplicarUsuarioEnAulasGranulares(email, tipoUsuario, courseIds, acc
     message: accionTexto + ' en aulas específicas. Aulas: ' + aulas.length + '. Procesadas: ' + resultado.ok + '. Omitidas: ' + resultado.omitidos + '. Errores: ' + resultado.errores.length + '. Tiempo: ' + segundos + ' s.'
   };
 }
+
+function panelBuscarColumnaOpcional_(headers, headerName) {
+  const index = headers.indexOf(headerName);
+  return index === -1 ? null : index;
+}
+
+function panelValorColumna_(row, colIndex) {
+  if (colIndex === null || colIndex === undefined || colIndex < 0) return '';
+  return String(row[colIndex] || '').trim();
+}
