@@ -11,8 +11,8 @@
     .top{background:linear-gradient(135deg,var(--red),#5f0d0d);color:white;padding:18px 16px 16px;box-shadow:0 4px 14px rgba(0,0,0,.16)}
     h1{font-size:19px;margin:0 0 4px}.top p{margin:0;font-size:12px;opacity:.9}
     .content{padding:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
-    .title{font-size:16px;font-weight:800;margin-bottom:5px}.small{font-size:12px;color:var(--muted);line-height:1.35}
-    .btn{display:block;text-decoration:none;text-align:center;background:var(--red);color:white;border-radius:14px;padding:13px 12px;font-weight:800;margin-top:12px;min-height:46px}
+    .title{font-size:16px;font-weight:800;margin-bottom:5px}.small{font-size:12px;color:var(--muted);line-height:1.35}.status{font-size:12px;color:var(--muted);margin-top:10px;min-height:16px}
+    .btn{display:block;width:100%;border:0;text-decoration:none;text-align:center;background:var(--red);color:white;border-radius:14px;padding:13px 12px;font-weight:800;margin-top:12px;min-height:46px;font-size:15px;cursor:pointer}
     .secondary{background:#2f3540}.ghost{background:white;color:var(--red);border:1px solid #f1b8b8}
     .grid{display:grid;gap:12px}.footer{color:var(--muted);font-size:11px;text-align:center;margin-top:18px}
     @media (min-width:760px){.content{padding:18px}.grid{grid-template-columns:1fr 1fr}.top{border-radius:0 0 18px 18px}}
@@ -29,21 +29,36 @@
       <div class="card">
         <div class="title">Panel operativo</div>
         <div class="small">Buscar usuarios, mover alumnos, agregar o retirar alumnos/profesores y cambiar contraseñas.</div>
-        <a class="btn" href="?panel=operativo">Abrir panel operativo</a>
+        <button class="btn" onclick="abrirPanel('operativo')" type="button">Abrir panel operativo</button>
       </div>
       <div class="card">
         <div class="title">Clases</div>
         <div class="small">Crear, buscar, editar, archivar, restaurar, eliminar clases y gestionar usuarios dentro de cada aula.</div>
-        <a class="btn secondary" href="?panel=clases">Abrir clases</a>
+        <button class="btn secondary" onclick="abrirPanel('clases')" type="button">Abrir clases</button>
       </div>
     </div>
     <div class="card">
       <div class="title">Acceso directo</div>
       <div class="small">Guarda esta pantalla en el inicio del teléfono. Desde aquí puedes entrar a los dos módulos.</div>
-      <a class="btn ghost" href="?panel=clases">Ir directo a Clases</a>
+      <button class="btn ghost" onclick="abrirPanel('clases')" type="button">Ir directo a Clases</button>
+      <div id="estado" class="status"></div>
     </div>
     <div class="footer">Liceo Los Robles · Classroom Manager</div>
   </div>
 </div>
+<script>
+function abrirPanel(panel){
+  document.getElementById('estado').textContent='Abriendo...';
+  google.script.run
+    .withSuccessHandler(function(res){
+      if(!res || !res.ok || !res.url){ document.getElementById('estado').textContent='No se pudo obtener la URL.'; return; }
+      window.top.location.href=res.url;
+    })
+    .withFailureHandler(function(error){
+      document.getElementById('estado').textContent=(error && error.message) ? error.message : String(error || 'Error');
+    })
+    .obtenerUrlPanelWeb(panel);
+}
+</script>
 </body>
 </html>
