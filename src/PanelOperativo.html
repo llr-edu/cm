@@ -33,6 +33,7 @@
     .action-card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:12px;margin:10px 0}.action-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:6px}.action-head b{font-size:14px}.pill{font-size:11px;border-radius:999px;background:#f1f2f4;color:#374151;padding:4px 8px;white-space:nowrap}
     .check{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:#374151}.check input{width:auto;margin:0;transform:scale(1.15)}
     .courses{background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden}.course{padding:10px;border-bottom:1px solid #eef0f3}.course:last-child{border-bottom:0}.course-title{font-weight:800;font-size:13px}.course-meta{font-size:11px;color:var(--muted);margin-top:3px}.none{padding:16px;color:var(--muted);font-size:13px;text-align:center}
+    .granular-list{max-height:310px;overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff;margin-top:10px}.granular-item{display:flex;gap:9px;align-items:flex-start;padding:10px;border-bottom:1px solid #eef0f3}.granular-item:last-child{border-bottom:0}.granular-item input{width:auto;margin-top:2px;transform:scale(1.1)}.granular-title{font-weight:800;font-size:13px}.granular-meta{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.3}.minirow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.minirow button{font-size:12px;min-height:38px;padding:8px;margin-top:8px}
     .bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;background:white;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.09)}
     .bottom button{margin:0;background:white;color:#4b5563;min-height:48px;padding:6px;border-radius:12px;font-size:12px}.bottom button.active{background:var(--soft);color:var(--red)}.bottom .ico{display:block;font-size:18px;line-height:18px;margin-bottom:2px}
     @media (min-width:760px){body{padding-bottom:0}.bottom{position:sticky}.content{padding:14px}.top{border-radius:0 0 18px 18px}.grid-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid-actions .action-card{margin:0}}
@@ -86,6 +87,25 @@
         </div>
         <label class="check"><input type="checkbox" id="passwordForzar" checked> Pedir cambio al iniciar sesión</label>
         <div id="estadoPassword" class="status"></div>
+      </div>
+
+      <div class="action-card">
+        <div class="action-head"><b>Aulas específicas</b><span class="pill">materias</span></div>
+        <div class="small">Agrega o retira el usuario seleccionado de aulas concretas. Filtra por materia, sección, nombre o código.</div>
+        <select id="nivelGranular"><option value="">Todos los niveles</option><option value="E.B.P.">E.B.P.</option><option value="E.M.G.">E.M.G.</option></select>
+        <input id="filtroGranular" type="text" placeholder="Ej.: Geografía, Biología, 072A, concursos..." autocomplete="off">
+        <button class="secondary" onclick="cargarAulasGranulares()" id="btnGranularCargar" type="button">Buscar aulas</button>
+        <div class="minirow">
+          <button class="ghost" onclick="marcarAulasGranulares(true)" type="button">Marcar</button>
+          <button class="ghost" onclick="marcarAulasGranulares(false)" type="button">Limpiar</button>
+          <button class="ghost" onclick="invertirAulasGranulares()" type="button">Invertir</button>
+        </div>
+        <div id="listaGranular" class="granular-list"><div class="none">Busca aulas para seleccionar.</div></div>
+        <div class="row">
+          <button onclick="aplicarAulasGranulares('agregar')" id="btnGranularAgregar" disabled>Agregar seleccionadas</button>
+          <button class="danger" onclick="aplicarAulasGranulares('retirar')" id="btnGranularRetirar" disabled>Retirar seleccionadas</button>
+        </div>
+        <div id="estadoGranular" class="status"></div>
       </div>
 
       <div id="accionesAlumno">
@@ -161,7 +181,7 @@
 </nav>
 
 <script>
-let tipo='Alumno', seleccionado=null, secciones=[], usuariosCache=[], aulasActuales=[], timer=null, reloj=null, inicioReloj=0, historialUsuarios=[], passwordDefault='';
+let tipo='Alumno', seleccionado=null, secciones=[], usuariosCache=[], aulasActuales=[], aulasGranulares=[], timer=null, reloj=null, inicioReloj=0, historialUsuarios=[], passwordDefault='';
 
 window.addEventListener('load',()=>{
   cargarHistorial();
@@ -315,7 +335,7 @@ function actualizarResumenUsuario(){
 
 function actualizarBotones(){
   const hay=!!(seleccionado&&seleccionado.email), esAlumno=tipo==='Alumno';
-  ['btnAulas','btnCopiar','btnPassword'].forEach(id=>$(id).disabled=!hay);
+  ['btnAulas','btnCopiar','btnPassword','btnGranularAgregar','btnGranularRetirar'].forEach(id=>$(id).disabled=!hay);
   ['btnAgregar','btnMover','btnRetirar'].forEach(id=>$(id).disabled=!hay||!esAlumno);
   ['btnProfesorAgregar','btnProfesorRetirar'].forEach(id=>$(id).disabled=!hay||esAlumno);
 }
@@ -408,6 +428,42 @@ function retirarProfesorSeccion(){
   google.script.run.withSuccessHandler(res=>terminarAccion('estadoProfesorRetirar',res)).withFailureHandler(error=>fallarAccion('estadoProfesorRetirar',error)).panelRetirarProfesorDeSeccion(seleccionado.email,nivel,seccion,incluir);
 }
 
+function cargarAulasGranulares(){
+  const nivel=$('nivelGranular').value, filtro=$('filtroGranular').value.trim();
+  iniciarReloj('estadoGranular','Buscando aulas');
+  google.script.run.withSuccessHandler(res=>{
+    detenerReloj();
+    aulasGranulares=res||[];
+    renderAulasGranulares();
+    setEstado('estadoGranular',aulasGranulares.length+' aula(s) encontrada(s).');
+  }).withFailureHandler(error=>{detenerReloj(); setEstado('estadoGranular',error.message||error);}).panelObtenerAulasGranulares(nivel,filtro);
+}
+
+function renderAulasGranulares(){
+  const cont=$('listaGranular'); cont.innerHTML='';
+  if(!aulasGranulares.length){ cont.innerHTML='<div class="none">Sin aulas para mostrar.</div>'; return; }
+  aulasGranulares.forEach((a,index)=>{
+    const label=document.createElement('label'); label.className='granular-item';
+    label.innerHTML=`<input type="checkbox" class="granular-check" value="${esc(a.courseId||'')}"><div><div class="granular-title">${esc(a.materia||a.nombre||'')}</div><div class="granular-meta">${esc(a.nomenclatura||'')} · ${esc(a.nombre||'')} · ${esc(a.courseId||'')}</div></div>`;
+    cont.appendChild(label);
+  });
+}
+
+function aulasGranularesSeleccionadas(){
+  return Array.from(document.querySelectorAll('.granular-check:checked')).map(x=>x.value).filter(Boolean);
+}
+function marcarAulasGranulares(valor){ document.querySelectorAll('.granular-check').forEach(x=>x.checked=valor); }
+function invertirAulasGranulares(){ document.querySelectorAll('.granular-check').forEach(x=>x.checked=!x.checked); }
+function aplicarAulasGranulares(accion){
+  if(!seleccionado){ setEstado('estadoGranular','Selecciona un usuario.'); return; }
+  const ids=aulasGranularesSeleccionadas();
+  if(!ids.length){ setEstado('estadoGranular','Selecciona al menos un aula.'); return; }
+  const texto=accion==='agregar'?'Agregar':'Retirar';
+  if(!confirm(texto+' '+seleccionado.email+' '+(accion==='agregar'?'a':'de')+' '+ids.length+' aula(s).')) return;
+  bloquear(true); iniciarReloj('estadoGranular',texto+' aulas');
+  google.script.run.withSuccessHandler(res=>terminarAccion('estadoGranular',res)).withFailureHandler(error=>fallarAccion('estadoGranular',error)).panelAplicarUsuarioEnAulasGranulares(seleccionado.email,tipo,ids,accion);
+}
+
 function usarPasswordDefault(){
   if(!passwordDefault){ setEstado('estadoPassword','No hay contraseña predeterminada en CONFIGURACIÓN.'); return; }
   $('passwordNueva').value=passwordDefault;
@@ -426,7 +482,7 @@ function cambiarPassword(){
 
 function terminarAccion(id,res){ bloquear(false); detenerReloj(); setEstado(id,(res&&res.message)||'Operación finalizada.'); verAulas(true); }
 function fallarAccion(id,error){ bloquear(false); detenerReloj(); setEstado(id,error.message||error); }
-function bloquear(v){ ['btnAgregar','btnMover','btnRetirar','btnAulas','btnProfesorAgregar','btnProfesorRetirar','btnPassword'].forEach(id=>$(id).disabled=v||!seleccionado); if(!v) actualizarBotones(); }
+function bloquear(v){ ['btnAgregar','btnMover','btnRetirar','btnAulas','btnProfesorAgregar','btnProfesorRetirar','btnPassword','btnGranularAgregar','btnGranularRetirar','btnGranularCargar'].forEach(id=>$(id).disabled=v||!seleccionado); if(!v) actualizarBotones(); }
 function iniciarReloj(id,texto){ detenerReloj(); inicioReloj=Date.now(); setEstado(id,texto+'... 0 s'); reloj=setInterval(()=>setEstado(id,texto+'... '+Math.round((Date.now()-inicioReloj)/1000)+' s'),1000); }
 function detenerReloj(){ if(reloj) clearInterval(reloj); reloj=null; }
 function copiarCorreo(){ if(!seleccionado) return; navigator.clipboard.writeText(seleccionado.email||''); setEstado('estadoBusqueda','Correo copiado: '+seleccionado.email); }
