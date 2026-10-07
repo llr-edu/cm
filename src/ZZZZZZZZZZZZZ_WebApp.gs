@@ -7,8 +7,18 @@ function doGet(e) {
   asegurarActualizacionNocturnaUsuarios_();
 
   const panel = e && e.parameter && String(e.parameter.panel || '').toLowerCase();
-  const file = panel === 'clases' ? 'PanelClases' : 'PanelOperativo';
-  const title = panel === 'clases' ? 'Clases · Classroom LL. RR.' : 'Classroom LL. RR.';
+  let file = 'PanelInicio';
+  let title = 'Classroom LL. RR.';
+
+  if (panel === 'clases') {
+    file = 'PanelClases';
+    title = 'Clases · Classroom LL. RR.';
+  }
+
+  if (panel === 'operativo' || panel === 'usuarios') {
+    file = 'PanelOperativo';
+    title = 'Panel operativo · Classroom LL. RR.';
+  }
 
   return HtmlService
     .createHtmlOutputFromFile(file)
