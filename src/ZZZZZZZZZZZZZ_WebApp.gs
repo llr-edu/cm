@@ -6,9 +6,13 @@ function doGet(e) {
   registrarHojasExtendidas_();
   asegurarActualizacionNocturnaUsuarios_();
 
+  const panel = e && e.parameter && String(e.parameter.panel || '').toLowerCase();
+  const file = panel === 'clases' ? 'PanelClases' : 'PanelOperativo';
+  const title = panel === 'clases' ? 'Clases · Classroom LL. RR.' : 'Classroom LL. RR.';
+
   return HtmlService
-    .createHtmlOutputFromFile('PanelOperativo')
-    .setTitle('Classroom LL. RR.')
+    .createHtmlOutputFromFile(file)
+    .setTitle(title)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
